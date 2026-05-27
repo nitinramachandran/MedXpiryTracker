@@ -1,41 +1,39 @@
-//
-//  Medicine_Date_AlerterUITests.swift
-//  Medicine Date AlerterUITests
-//
-//  Created by Nitin Ramachandran on 19/05/26.
-//
-
 import XCTest
 
+/// UI tests that launch the app and interact with it like a user would.
+///
+/// UI tests are slower than unit tests because they run the full app in a simulator or device.
 final class Medicine_Date_AlerterUITests: XCTestCase {
 
+    /// Runs before each UI test.
+    ///
+    /// `continueAfterFailure = false` stops the test immediately after the first failure,
+    /// which usually makes UI failures easier to understand.
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+    /// Runs after each UI test.
+    ///
+    /// This is empty for now, but it is where cleanup code would go if tests created
+    /// shared state that needed to be reset.
+    override func tearDownWithError() throws {}
 
+    /// Verifies that the app can launch successfully.
+    ///
+    /// This is intentionally simple. More UI tests can later type into fields and tap
+    /// buttons using the accessibility identifiers defined in `ContentView`.
     @MainActor
     func testExample() throws {
-        // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
     }
 
+    /// Measures how long the app takes to launch.
+    ///
+    /// Xcode records this as a performance metric so future changes can be compared.
     @MainActor
     func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }

@@ -6,6 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1517138A2FBCAC39000CEFA5 /* Medicine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151713892FBCAC39000CEFA5 /* Medicine.swift */; };
+		1517138C2FBCAC3A000CEFA5 /* MedicineDateParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1517138B2FBCAC3A000CEFA5 /* MedicineDateParser.swift */; };
+		1517138E2FBCAC3A000CEFA5 /* MedicineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1517138D2FBCAC3A000CEFA5 /* MedicineStore.swift */; };
+		151713902FBCAC3B000CEFA5 /* NotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1517138F2FBCAC3B000CEFA5 /* NotificationScheduler.swift */; };
+		151713922FBCAC3B000CEFA5 /* AppNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151713912FBCAC3B000CEFA5 /* AppNotificationDelegate.swift */; };
+		151713942FBCAC6D000CEFA5 /* TextScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151713932FBCAC6D000CEFA5 /* TextScannerView.swift */; };
+		158402772FC38EB300221BBC /* AlarmNotificationSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402762FC38EB300221BBC /* AlarmNotificationSound.swift */; };
+		158402792FC390A500221BBC /* MedicineNotificationRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402782FC390A500221BBC /* MedicineNotificationRoute.swift */; };
+		1584027B2FC407B400221BBC /* SnoozeOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1584027A2FC407B400221BBC /* SnoozeOption.swift */; };
+		158402892FC47D5000221BBC /* MedicineNameParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402882FC47D5000221BBC /* MedicineNameParser.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		1517136D2FBCA61E000CEFA5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +40,16 @@
 		1517135F2FBCA61C000CEFA5 /* Medicine Date Alerter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Medicine Date Alerter.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1517136C2FBCA61E000CEFA5 /* Medicine Date AlerterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Medicine Date AlerterTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		151713762FBCA61E000CEFA5 /* Medicine Date AlerterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Medicine Date AlerterUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		151713892FBCAC39000CEFA5 /* Medicine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Medicine.swift; sourceTree = "<group>"; };
+		1517138B2FBCAC3A000CEFA5 /* MedicineDateParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineDateParser.swift; sourceTree = "<group>"; };
+		1517138D2FBCAC3A000CEFA5 /* MedicineStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineStore.swift; sourceTree = "<group>"; };
+		1517138F2FBCAC3B000CEFA5 /* NotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationScheduler.swift; sourceTree = "<group>"; };
+		151713912FBCAC3B000CEFA5 /* AppNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotificationDelegate.swift; sourceTree = "<group>"; };
+		151713932FBCAC6D000CEFA5 /* TextScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextScannerView.swift; sourceTree = "<group>"; };
+		158402762FC38EB300221BBC /* AlarmNotificationSound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmNotificationSound.swift; sourceTree = "<group>"; };
+		158402782FC390A500221BBC /* MedicineNotificationRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineNotificationRoute.swift; sourceTree = "<group>"; };
+		1584027A2FC407B400221BBC /* SnoozeOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnoozeOption.swift; sourceTree = "<group>"; };
+		158402882FC47D5000221BBC /* MedicineNameParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineNameParser.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -79,6 +102,16 @@
 				1517136F2FBCA61E000CEFA5 /* Medicine Date AlerterTests */,
 				151713792FBCA61E000CEFA5 /* Medicine Date AlerterUITests */,
 				151713602FBCA61C000CEFA5 /* Products */,
+				151713892FBCAC39000CEFA5 /* Medicine.swift */,
+				1517138B2FBCAC3A000CEFA5 /* MedicineDateParser.swift */,
+				1517138D2FBCAC3A000CEFA5 /* MedicineStore.swift */,
+				1517138F2FBCAC3B000CEFA5 /* NotificationScheduler.swift */,
+				151713912FBCAC3B000CEFA5 /* AppNotificationDelegate.swift */,
+				151713932FBCAC6D000CEFA5 /* TextScannerView.swift */,
+				158402762FC38EB300221BBC /* AlarmNotificationSound.swift */,
+				158402782FC390A500221BBC /* MedicineNotificationRoute.swift */,
+				1584027A2FC407B400221BBC /* SnoozeOption.swift */,
+				158402882FC47D5000221BBC /* MedicineNameParser.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -236,6 +269,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1517138C2FBCAC3A000CEFA5 /* MedicineDateParser.swift in Sources */,
+				158402772FC38EB300221BBC /* AlarmNotificationSound.swift in Sources */,
+				151713922FBCAC3B000CEFA5 /* AppNotificationDelegate.swift in Sources */,
+				158402892FC47D5000221BBC /* MedicineNameParser.swift in Sources */,
+				1584027B2FC407B400221BBC /* SnoozeOption.swift in Sources */,
+				151713942FBCAC6D000CEFA5 /* TextScannerView.swift in Sources */,
+				158402792FC390A500221BBC /* MedicineNotificationRoute.swift in Sources */,
+				1517138A2FBCAC39000CEFA5 /* Medicine.swift in Sources */,
+				1517138E2FBCAC3A000CEFA5 /* MedicineStore.swift in Sources */,
+				151713902FBCAC3B000CEFA5 /* NotificationScheduler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,8 +438,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BPH648379N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PillTrack;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan medicine labels and dates so you can edit and save expiry reminders.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -426,8 +472,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BPH648379N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PillTrack;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan medicine labels and dates so you can edit and save expiry reminders.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -456,7 +505,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nixutils.Medicine-Date-AlerterTests";
@@ -477,7 +529,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nixutils.Medicine-Date-AlerterTests";
@@ -495,9 +550,12 @@
 		151713872FBCA61E000CEFA5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nixutils.Medicine-Date-AlerterUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -514,9 +572,12 @@
 		151713882FBCA61E000CEFA5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nixutils.Medicine-Date-AlerterUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";

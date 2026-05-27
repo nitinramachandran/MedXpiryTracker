@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SchemeUserState</key>
+	<dict>
+		<key>Medicine Date Alerter.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>1517135E2FBCA61C000CEFA5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>1517136B2FBCA61E000CEFA5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>151713752FBCA61E000CEFA5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>
