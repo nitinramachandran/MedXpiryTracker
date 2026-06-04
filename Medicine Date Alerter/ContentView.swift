@@ -179,9 +179,8 @@ struct ContentView: View {
                     medicineDetailsPopup(for: notificationMedicine)
                 }
             }
-            .task {
-                await listenForNotificationTaps()
-            }
+            .task { await store.load() }
+            .task { await listenForNotificationTaps() }
         }
         .preferredColorScheme(.light)
     }

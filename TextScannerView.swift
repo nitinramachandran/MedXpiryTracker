@@ -39,6 +39,7 @@ struct TextScannerView: View {
     @State private var detectedTexts: [String] = []
     @State private var capturedTexts: [String] = []
     @State private var selectedDateText: String?
+    @State private var selectedDateIsValid = false
 
     /// First detected name candidate. Live OCR sends larger text first, so this is the
     /// best guess for the medicine name.
@@ -59,11 +60,8 @@ struct TextScannerView: View {
     /// Whether the bottom confirmation button should be enabled.
     private var canConfirm: Bool {
         switch captureMode {
-        case .manualText:
-            return !capturedTexts.isEmpty
-        case .singleDate:
-            guard let selectedDateText else { return false }
-            return MedicineDateParser.firstDate(from: selectedDateText) != nil
+        case .manualText: return !capturedTexts.isEmpty
+        case .singleDate: return selectedDateIsValid
         }
     }
 
@@ -126,6 +124,9 @@ struct TextScannerView: View {
         .environment(\.colorScheme, .light)
         .background(ScannerPalette.background)
         .preferredColorScheme(.light)
+        .onChange(of: selectedDateText) { _, newValue in
+            selectedDateIsValid = newValue.map { MedicineDateParser.firstDate(from: $0) != nil } ?? false
+        }
     }
 
     /// Shows either manual text selection or automatic date detection, depending on mode.

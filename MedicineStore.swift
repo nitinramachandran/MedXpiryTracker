@@ -16,10 +16,29 @@ final class MedicineStore {
     private let storageURL: URL?
 
     /// Creates the store used by the real app, wired to iOS local notifications and disk storage.
+    ///
+    /// Does not load from disk synchronously — call `load()` from the view's `.task` instead
+    /// so the main actor is not blocked during app launch.
     init() {
         self.notificationScheduler = LocalNotificationScheduler()
         self.storageURL = Self.defaultStorageURL()
-        loadFromDisk()
+    }
+
+    /// Loads saved medicines from disk on a background thread.
+    ///
+    /// Call this once from a SwiftUI `.task` modifier on the root view. The main actor is
+    /// never blocked — only the result assignment runs there.
+    func load() async {
+        guard let storageURL, FileManager.default.fileExists(atPath: storageURL.path) else { return }
+        do {
+            let url = storageURL
+            let data = try await Task.detached(priority: .userInitiated) {
+                try Data(contentsOf: url)
+            }.value
+            medicines = try Self.decoder.decode([Medicine].self, from: data)
+        } catch {
+            // File damaged or unreadable — stay empty.
+        }
     }
 
     /// Creates the store with a custom scheduler.

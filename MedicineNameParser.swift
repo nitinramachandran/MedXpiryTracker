@@ -6,9 +6,9 @@ import Foundation
 /// field we keep short same-row candidates of 1 to 3 words. This allows real names like
 /// `Crocin Advance` or `Dolo 650`, while still ignoring longer sentence-like text.
 enum MedicineNameParser {
-    private static let maximumWords = 3
-    private static let medicineNameSymbols = CharacterSet(charactersIn: "®™℠")
-    private static let allowedWordCharacters = CharacterSet.alphanumerics
+    nonisolated private static let maximumWords = 3
+    nonisolated private static let medicineNameSymbols = CharacterSet(charactersIn: "®™℠")
+    nonisolated private static let allowedWordCharacters = CharacterSet.alphanumerics
         .union(CharacterSet(charactersIn: "-"))
 
     /// Returns unique medicine-name candidates from OCR text.
