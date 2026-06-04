@@ -6,13 +6,13 @@ import Foundation
 /// field we keep short same-row candidates of 1 to 3 words. This allows real names like
 /// `Crocin Advance` or `Dolo 650`, while still ignoring longer sentence-like text.
 enum MedicineNameParser {
-    nonisolated private static let maximumWords = 3
-    nonisolated private static let medicineNameSymbols = CharacterSet(charactersIn: "®™℠")
-    nonisolated private static let allowedWordCharacters = CharacterSet.alphanumerics
+    private static let maximumWords = 3
+    private static let medicineNameSymbols = CharacterSet(charactersIn: "®™℠")
+    private static let allowedWordCharacters = CharacterSet.alphanumerics
         .union(CharacterSet(charactersIn: "-"))
 
     /// Returns unique medicine-name candidates from OCR text.
-    nonisolated static func candidates(from texts: [String]) -> [String] {
+    static func candidates(from texts: [String]) -> [String] {
         var seen: Set<String> = []
         var candidates: [String] = []
 
@@ -28,7 +28,7 @@ enum MedicineNameParser {
     }
 
     /// Returns one cleaned candidate, or `nil` when the OCR text looks like a sentence.
-    nonisolated static func candidate(from text: String) -> String? {
+    static func candidate(from text: String) -> String? {
         let cleaned = text
             .components(separatedBy: medicineNameSymbols)
             .joined()
@@ -48,8 +48,7 @@ enum MedicineNameParser {
         return words.joined(separator: " ").localizedCapitalized
     }
 
-    /// Checks one word inside a candidate.
-    nonisolated private static func isAllowedWord(_ word: String) -> Bool {
+    private static func isAllowedWord(_ word: String) -> Bool {
         word.unicodeScalars.allSatisfy { allowedWordCharacters.contains($0) }
     }
 }

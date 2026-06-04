@@ -488,6 +488,8 @@ Applies changes to an existing medicine, validates the result, refreshes the not
 
 Removes a medicine, writes the changed list to disk, and cancels its reminder.
 
+This function can throw. If writing the changed JSON file fails, the previous in-memory list is restored so the UI does not hide a medicine that still exists on disk.
+
 #### `exportData()`
 
 Encodes the medicine array as JSON data. This is groundwork for portable export later.
@@ -507,6 +509,8 @@ Reads saved medicines from disk when the app starts. If no file exists yet, the 
 #### `persistToDisk()`
 
 Writes the current medicine list to the app sandbox as JSON.
+
+The JSON file and its folder use iOS complete file protection, which keeps the saved medicine data encrypted and unavailable while the phone is locked.
 
 #### `encoder`
 
@@ -561,6 +565,8 @@ Creates the scheduler. Defaults to the current app's notification center.
 Requests permission if needed, builds notification content, and schedules a reminder.
 
 Normally schedules one day before expiry. If that time is already past, schedules about 60 seconds in the future so it can be tested.
+
+The lock-screen notification text is intentionally generic. It stores only the medicine UUID and snooze duration in notification metadata, then the app looks up the full medicine details after the user opens the app.
 
 #### `cancelReminder(for:)`
 
@@ -621,6 +627,8 @@ Handles notification actions:
 - Snooze: reschedules the reminder after the configured snooze duration.
 - Cancel: removes pending and delivered reminders.
 - Tapping the notification body: asks the SwiftUI screen to show the tapped medicine's details.
+
+If snooze rescheduling fails, the app logs a generic notification error without including the medicine name.
 
 ---
 

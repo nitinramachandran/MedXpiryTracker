@@ -38,13 +38,12 @@ struct LocalNotificationScheduler: NotificationScheduling {
         Self.configureNotificationActions(on: center)
 
         let content = UNMutableNotificationContent()
-        content.title = "Medicine expires tomorrow"
-        content.body = "\(medicine.name) expires on \(medicine.expiryDate.formatted(date: .abbreviated, time: .omitted))."
+        content.title = "Expiry reminder"
+        content.body = "One saved item expires tomorrow."
         AlarmNotificationSound.applyUrgency(to: content)
         content.categoryIdentifier = Self.categoryIdentifier
         content.userInfo = [
             "medicineID": medicine.id.uuidString,
-            "medicineName": medicine.name,
             "snoozeMinutes": medicine.snoozeMinutes
         ]
 
@@ -104,8 +103,8 @@ struct LocalNotificationScheduler: NotificationScheduling {
     /// iOS only plays sounds or shows alerts after the user grants permission.
     private func requestAuthorizationIfNeeded() async throws {
         let settings = await center.notificationSettings()
-        guard settings.authorizationStatus != .authorized else { return }
-
+        let status = settings.authorizationStatus
+        guard status != .authorized, status != .provisional else { return }
         _ = try await center.requestAuthorization(options: [.alert, .sound, .badge])
     }
 }

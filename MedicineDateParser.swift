@@ -30,12 +30,17 @@ struct MedicineDateParser {
         "DEC": 12
     ]
 
+    /// Replaces OCR-common misreads (letter O → digit 0) before pattern matching.
+    private static func normalizedForOCR(_ text: String) -> String {
+        text.replacingOccurrences(of: "O", with: "0")
+    }
+
     /// Finds every date-looking string inside a block of OCR text.
     ///
     /// This is useful for the scanner UI because it lets the app show only date values
     /// and hide unrelated words like medicine names, labels, and dosage text.
     static func extractDateStrings(from text: String) -> [String] {
-        let normalized = text.replacingOccurrences(of: "O", with: "0")
+        let normalized = normalizedForOCR(text)
         let range = NSRange(normalized.startIndex..<normalized.endIndex, in: normalized)
 
         var seen: Set<String> = []
@@ -57,8 +62,7 @@ struct MedicineDateParser {
     /// Returns dates sorted from earliest to latest. The optional `calendar` parameter
     /// makes the function easier to test because tests can pass a specific calendar.
     static func extractDates(from text: String, calendar: Calendar = .current) -> [Date] {
-        // OCR often confuses the letter O with zero, so normalize that common mistake.
-        let normalized = text.replacingOccurrences(of: "O", with: "0")
+        let normalized = normalizedForOCR(text)
         let range = NSRange(normalized.startIndex..<normalized.endIndex, in: normalized)
         let numericDates = numericMatches(in: normalized, range: range).compactMap { match in
             let values = (1..<match.numberOfRanges).compactMap { index -> Int? in
@@ -121,16 +125,15 @@ struct MedicineDateParser {
         return calendar.date(from: components)
     }
 
-    /// Finds numeric date matches.
+    private static let numericRegex = try? NSRegularExpression(pattern: numericPattern, options: [])
+    private static let monthNameRegex = try? NSRegularExpression(pattern: monthNamePattern, options: [.caseInsensitive])
+
     private static func numericMatches(in text: String, range: NSRange) -> [NSTextCheckingResult] {
-        let regex = try? NSRegularExpression(pattern: numericPattern, options: [])
-        return regex?.matches(in: text, range: range) ?? []
+        numericRegex?.matches(in: text, range: range) ?? []
     }
 
-    /// Finds month-name date matches, ignoring case.
     private static func monthNameMatches(in text: String, range: NSRange) -> [NSTextCheckingResult] {
-        let regex = try? NSRegularExpression(pattern: monthNamePattern, options: [.caseInsensitive])
-        return regex?.matches(in: text, range: range) ?? []
+        monthNameRegex?.matches(in: text, range: range) ?? []
     }
 
     /// Converts one month-name regex match into a `Date`.

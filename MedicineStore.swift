@@ -82,15 +82,31 @@ final class MedicineStore {
             expiryDate: updated.expiryDate
         )
 
-        try await notificationScheduler.scheduleExpiryReminder(for: updated)
         medicines[index] = updated
-        try persistToDisk()
+        do {
+            try persistToDisk()
+        } catch {
+            medicines[index] = current
+            throw error
+        }
+        try await notificationScheduler.scheduleExpiryReminder(for: updated)
     }
 
     /// Removes a medicine from memory, saves the changed list to disk, and cancels its notification.
-    func delete(_ medicine: Medicine) async {
+    ///
+    /// The previous list is restored if disk writing fails. This avoids a confusing state
+    /// where the UI hides a medicine but the saved JSON file still contains it.
+    func delete(_ medicine: Medicine) async throws {
+        let previousMedicines = medicines
         medicines.removeAll { $0.id == medicine.id }
-        try? persistToDisk()
+
+        do {
+            try persistToDisk()
+        } catch {
+            medicines = previousMedicines
+            throw error
+        }
+
         await notificationScheduler.cancelReminder(for: medicine.id)
     }
 
@@ -101,10 +117,23 @@ final class MedicineStore {
         try Self.encoder.encode(medicines)
     }
 
-    /// Replaces the current list from previously exported JSON data and saves it to disk.
-    func importData(_ data: Data) throws {
+    /// Replaces the current list from previously exported JSON data, saves it to disk,
+    /// cancels all previous notifications, and schedules reminders for the imported medicines.
+    func importData(_ data: Data) async throws {
+        let previous = medicines
         medicines = try Self.decoder.decode([Medicine].self, from: data)
-        try persistToDisk()
+        do {
+            try persistToDisk()
+        } catch {
+            medicines = previous
+            throw error
+        }
+        for medicine in previous {
+            await notificationScheduler.cancelReminder(for: medicine.id)
+        }
+        for medicine in medicines {
+            try? await notificationScheduler.scheduleExpiryReminder(for: medicine)
+        }
     }
 
     /// Location of the JSON file inside this app's sandbox.
@@ -143,13 +172,26 @@ final class MedicineStore {
     }
 
     /// Writes the current medicine list to the app sandbox as JSON.
+    ///
+    /// `.completeFileProtection` keeps the saved medicine file encrypted and unavailable
+    /// while the iPhone is locked. Notifications only carry the medicine ID, so the lock
+    /// screen does not need this file to show the reminder.
     private func persistToDisk() throws {
         guard let storageURL else { return }
 
         let directoryURL = storageURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        try FileManager.default.setAttributes(
+            [.protectionKey: FileProtectionType.complete],
+            ofItemAtPath: directoryURL.path
+        )
+
         let data = try exportData()
         try data.write(to: storageURL, options: [.atomic])
+        try FileManager.default.setAttributes(
+            [.protectionKey: FileProtectionType.complete],
+            ofItemAtPath: storageURL.path
+        )
     }
 
     /// Shared JSON encoder so dates are written in a stable, readable format.

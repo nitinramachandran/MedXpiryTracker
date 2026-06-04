@@ -1,3 +1,4 @@
+import os
 import UIKit
 import UserNotifications
 
@@ -6,6 +7,8 @@ import UserNotifications
 /// This class receives notification events from iOS, such as the user tapping Snooze
 /// or Cancel on a delivered notification.
 final class AppNotificationDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "PillEye", category: "Notifications")
+
     /// Runs when iOS finishes launching the app.
     ///
     /// This is where we attach this object as the notification delegate and register
@@ -68,7 +71,11 @@ final class AppNotificationDelegate: NSObject, UIApplicationDelegate, UNUserNoti
                 repeats: false
             )
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-            try? await center.add(request)
+            do {
+                try await center.add(request)
+            } catch {
+                logger.error("Failed to reschedule snoozed reminder.")
+            }
 
         case LocalNotificationScheduler.cancelActionIdentifier, UNNotificationDismissActionIdentifier:
             center.removePendingNotificationRequests(withIdentifiers: [identifier])

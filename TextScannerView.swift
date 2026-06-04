@@ -580,21 +580,15 @@ private final class ScannerHostViewController: UIViewController {
         return width * height
     }
 
-    /// Shows a temporary status message.
     private func showStatus(_ message: String) {
-        showMessage(message, includeCloseButton: false)
+        showMessage(message)
     }
 
-    /// Shows an error or unsupported-state message.
     private func showUnavailable(_ message: String) {
-        showMessage(message, includeCloseButton: false)
+        showMessage(message)
     }
 
-    /// Replaces the current UI with a centered message.
-    ///
-    /// This uses UIKit layout constraints. Think of constraints as rules that pin views
-    /// to positions, similar to CSS layout constraints but expressed in code.
-    private func showMessage(_ message: String, includeCloseButton: Bool) {
+    private func showMessage(_ message: String) {
         view.subviews.forEach { $0.removeFromSuperview() }
 
         let label = UILabel()
@@ -622,11 +616,11 @@ private enum ScannerPalette {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    static let mint = Color(red: 0.82, green: 0.96, blue: 0.91)
-    static let teal = Color(red: 0.00, green: 0.58, blue: 0.58)
-    static let coral = Color(red: 0.96, green: 0.36, blue: 0.33)
-    static let blue = Color(red: 0.25, green: 0.50, blue: 0.92)
-    static let ink = Color(red: 0.12, green: 0.18, blue: 0.24)
+    static let mint = PillEyePalette.mint
+    static let teal = PillEyePalette.teal
+    static let coral = PillEyePalette.coral
+    static let blue = PillEyePalette.blue
+    static let ink = PillEyePalette.ink
 }
 #else
 /// Fallback scanner view for platforms where VisionKit is not available.

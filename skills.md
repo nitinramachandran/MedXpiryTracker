@@ -99,6 +99,7 @@ Scan medicine labels and dates so you can edit and save expiry reminders.
 
 - Save medicine records locally using JSON in the app sandbox.
 - Use the app container `Application Support` directory.
+- Protect the JSON file with iOS complete file protection so it is unavailable while the iPhone is locked.
 - Delete saved app data automatically when the app is deleted.
 - Show saved medicines with:
   - Name
@@ -116,6 +117,7 @@ Scan medicine labels and dates so you can edit and save expiry reminders.
 ### Notifications
 
 - Schedule a local notification one day before expiry.
+- Keep lock-screen notification text generic and store only the medicine UUID plus snooze duration in notification metadata.
 - Notification should include sound.
 - Use a custom `alarm.caf` if one is bundled.
 - Fall back to iOS default notification sound if no custom sound exists.
@@ -165,6 +167,7 @@ Key tests should cover:
 - Numeric date parsing.
 - Month-name date parsing.
 - Disk persistence.
+- Protected local storage and safe delete behavior.
 - Snooze editing and notification rescheduling.
 
 ## Run On iPhone

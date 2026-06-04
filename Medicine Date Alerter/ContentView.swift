@@ -128,7 +128,9 @@ struct ContentView: View {
                             MedicineRow(medicine: medicine)
                                 .swipeActions {
                                     Button(role: .destructive) {
-                                        Task { await store.delete(medicine) }
+                                        Task {
+                                            await deleteMedicine(medicine)
+                                        }
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -205,6 +207,19 @@ struct ContentView: View {
             notificationMedicineID = medicineID
         } else {
             validationMessage = "This medicine is no longer available."
+        }
+    }
+
+    /// Deletes one medicine and shows any disk-write failure instead of hiding it.
+    @discardableResult
+    private func deleteMedicine(_ medicine: Medicine) async -> Bool {
+        do {
+            try await store.delete(medicine)
+            validationMessage = nil
+            return true
+        } catch {
+            validationMessage = "Could not delete medicine: \(error.localizedDescription)"
+            return false
         }
     }
 
@@ -340,8 +355,10 @@ struct ContentView: View {
                 HStack(spacing: 12) {
                     Button(role: .destructive) {
                         Task {
-                            await store.delete(medicine)
-                            notificationMedicineID = nil
+                            let didDelete = await deleteMedicine(medicine)
+                            if didDelete {
+                                notificationMedicineID = nil
+                            }
                         }
                     } label: {
                         Label("Delete", systemImage: "trash.fill")
@@ -636,7 +653,7 @@ private struct MedicineRow: View {
 /// Light, friendly colors used by the PillEye interface.
 ///
 /// Grouping colors here keeps styling consistent and easier to change later.
-private enum PillEyePalette {
+enum PillEyePalette {
     static let background = LinearGradient(
         colors: [
             Color(red: 0.94, green: 0.99, blue: 0.97),
@@ -664,18 +681,11 @@ private enum PillEyePalette {
 }
 
 /// Identifies which date field is being edited in the manual date popup.
-private enum ManualDateTarget: Identifiable {
+private enum ManualDateTarget: Hashable, Identifiable {
     case manufacturing
     case expiry
 
-    var id: String {
-        switch self {
-        case .manufacturing:
-            return "manufacturing"
-        case .expiry:
-            return "expiry"
-        }
-    }
+    var id: Self { self }
 
     var title: String {
         switch self {

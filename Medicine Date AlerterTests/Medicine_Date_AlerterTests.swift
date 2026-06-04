@@ -151,6 +151,21 @@ struct Medicine_Date_AlerterTests {
         #expect(store.medicines.first?.snoozeMinutes == 10080)
         #expect(scheduler.scheduledMedicineNames == ["Cetirizine", "Cetirizine"])
     }
+
+    /// Verifies delete removes a medicine and asks the scheduler to cancel its reminder.
+    @Test @MainActor func storeDeletesMedicineAndCancelsReminder() async throws {
+        let scheduler = SpyNotificationScheduler()
+        let store = MedicineStore(notificationScheduler: scheduler)
+        let manufacturing = try #require(makeDate(year: 2026, month: 5, day: 1))
+        let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
+
+        try await store.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry, snoozeMinutes: 1440)
+        let medicine = try #require(store.medicines.first)
+        try await store.delete(medicine)
+
+        #expect(store.medicines.isEmpty)
+        #expect(scheduler.cancelledMedicineIDs == [medicine.id])
+    }
 }
 
 /// Helper for building predictable dates in tests.
@@ -180,12 +195,15 @@ private func temporaryStorageURL() -> URL {
 @MainActor
 private final class SpyNotificationScheduler: NotificationScheduling {
     var scheduledMedicineNames: [String] = []
+    var cancelledMedicineIDs: [UUID] = []
 
     /// Records the scheduled medicine name instead of scheduling a real notification.
     func scheduleExpiryReminder(for medicine: Medicine) async throws {
         scheduledMedicineNames.append(medicine.name)
     }
 
-    /// No-op cancel function because these unit tests only verify scheduling.
-    func cancelReminder(for medicineID: UUID) async {}
+    /// Records cancellation requests without talking to iOS notifications.
+    func cancelReminder(for medicineID: UUID) async {
+        cancelledMedicineIDs.append(medicineID)
+    }
 }
