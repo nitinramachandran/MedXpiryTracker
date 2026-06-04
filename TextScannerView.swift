@@ -123,7 +123,9 @@ struct TextScannerView: View {
         }
         .padding()
         .fontDesign(.rounded)
+        .environment(\.colorScheme, .light)
         .background(ScannerPalette.background)
+        .preferredColorScheme(.light)
     }
 
     /// Shows either manual text selection or automatic date detection, depending on mode.

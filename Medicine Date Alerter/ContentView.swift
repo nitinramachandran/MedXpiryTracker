@@ -92,6 +92,7 @@ struct ContentView: View {
                         }
                     }
                 }
+                .listRowBackground(PillEyePalette.formRowBackground)
 
                 if let validationMessage {
                     Section {
@@ -100,6 +101,7 @@ struct ContentView: View {
                             .foregroundStyle(PillEyePalette.coral)
                             .accessibilityIdentifier("validationMessage")
                     }
+                    .listRowBackground(PillEyePalette.formRowBackground)
                 }
 
                 Section {
@@ -112,6 +114,7 @@ struct ContentView: View {
                     .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, minHeight: 46))
                     .accessibilityIdentifier("saveMedicineButton")
                 }
+                .listRowBackground(PillEyePalette.formRowBackground)
 
                 Section("Saved medicines") {
                     if store.medicines.isEmpty {
@@ -140,8 +143,10 @@ struct ContentView: View {
                         }
                     }
                 }
+                .listRowBackground(PillEyePalette.formRowBackground)
             }
             .fontDesign(.rounded)
+            .environment(\.colorScheme, .light)
             .tint(PillEyePalette.teal)
             .scrollContentBackground(.hidden)
             .background(PillEyePalette.background)
@@ -176,6 +181,7 @@ struct ContentView: View {
                 await listenForNotificationTaps()
             }
         }
+        .preferredColorScheme(.light)
     }
 
     /// Waits for notification-tap events from `AppNotificationDelegate`.
@@ -648,6 +654,7 @@ private enum PillEyePalette {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+    static let formRowBackground = Color(red: 0.985, green: 1.00, blue: 0.99)
     static let mint = Color(red: 0.82, green: 0.96, blue: 0.91)
     static let teal = Color(red: 0.00, green: 0.58, blue: 0.58)
     static let deepTeal = Color(red: 0.00, green: 0.36, blue: 0.42)

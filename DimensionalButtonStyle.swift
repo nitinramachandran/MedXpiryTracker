@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Reusable 3D-style button treatment for PillEye.
+/// Reusable raised button treatment for PillEye.
 ///
-/// The style adds depth with a subtle gradient, top highlight, border, shadow, and
-/// animated tap feedback. Keeping this in one place makes the app's buttons look consistent.
+/// The style adds professional depth with a restrained gradient, crisp border, soft
+/// shadow, and clear press feedback. Keeping this in one place makes the app's buttons
+/// look consistent across forms, popups, and scanner screens.
 struct DimensionalButtonStyle: ButtonStyle {
     enum Prominence {
         case primary
@@ -34,19 +35,27 @@ struct DimensionalButtonStyle: ButtonStyle {
         let prominence: Prominence
         let minHeight: CGFloat
 
+        private let cornerRadius: CGFloat = 12
+
         private var backgroundGradient: LinearGradient {
             switch prominence {
             case .primary:
                 LinearGradient(
-                    colors: [fill.opacity(isEnabled ? 0.95 : 0.36), fill.opacity(isEnabled ? 0.78 : 0.24)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    colors: [
+                        fill.opacity(isEnabled ? 0.98 : 0.35),
+                        fill.opacity(isEnabled ? 0.86 : 0.24)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
             case .secondary:
                 LinearGradient(
-                    colors: [Color.white.opacity(isEnabled ? 0.95 : 0.58), fill.opacity(isEnabled ? 0.18 : 0.10)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    colors: [
+                        Color.white.opacity(isEnabled ? 0.96 : 0.55),
+                        fill.opacity(isEnabled ? 0.16 : 0.08)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
             }
         }
@@ -54,61 +63,63 @@ struct DimensionalButtonStyle: ButtonStyle {
         private var textColor: Color {
             switch prominence {
             case .primary:
-                return foreground.opacity(isEnabled ? 1.0 : 0.62)
+                return foreground.opacity(isEnabled ? 1.0 : 0.60)
             case .secondary:
-                return fill.opacity(isEnabled ? 1.0 : 0.52)
+                return fill.opacity(isEnabled ? 0.95 : 0.46)
             }
         }
 
-        /// Extra visual feedback while the user's finger is down.
-        private var pressedOverlayOpacity: Double {
-            configuration.isPressed && isEnabled ? 0.16 : 0.0
+        private var borderColor: Color {
+            switch prominence {
+            case .primary:
+                return fill.opacity(isEnabled ? 0.62 : 0.18)
+            case .secondary:
+                return fill.opacity(isEnabled ? 0.42 : 0.14)
+            }
+        }
+
+        private var pressOverlay: Color {
+            switch prominence {
+            case .primary:
+                return Color.black.opacity(configuration.isPressed && isEnabled ? 0.08 : 0.0)
+            case .secondary:
+                return fill.opacity(configuration.isPressed && isEnabled ? 0.12 : 0.0)
+            }
         }
 
         var body: some View {
             configuration.label
                 .font(.body.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
                 .foregroundStyle(textColor)
                 .padding(.horizontal, 15)
                 .frame(minHeight: minHeight)
-                .background(backgroundGradient, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                .background(backgroundGradient, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 .overlay(alignment: .top) {
-                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .stroke(Color.white.opacity(isEnabled ? 0.58 : 0.22), lineWidth: 1)
-                        .frame(height: minHeight / 2)
-                        .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                    Capsule()
+                        .fill(Color.white.opacity(isEnabled && !configuration.isPressed ? 0.28 : 0.12))
+                        .frame(height: 1)
+                        .padding(.horizontal, 14)
+                        .padding(.top, 1)
                 }
                 .overlay {
-                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .stroke(fill.opacity(isEnabled ? 0.42 : 0.16), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(borderColor, lineWidth: 1)
                 }
                 .overlay {
-                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .fill(Color.white.opacity(pressedOverlayOpacity))
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .stroke(
-                            fill.opacity(configuration.isPressed && isEnabled ? 0.86 : 0.0),
-                            lineWidth: configuration.isPressed ? 2 : 0
-                        )
-                        .shadow(
-                            color: fill.opacity(configuration.isPressed && isEnabled ? 0.42 : 0.0),
-                            radius: configuration.isPressed ? 10 : 0,
-                            x: 0,
-                            y: 0
-                        )
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(pressOverlay)
                 }
                 .shadow(
-                    color: fill.opacity(isEnabled ? (configuration.isPressed ? 0.16 : 0.30) : 0.06),
-                    radius: configuration.isPressed ? 3 : 8,
+                    color: fill.opacity(isEnabled ? (configuration.isPressed ? 0.12 : 0.22) : 0.04),
+                    radius: configuration.isPressed ? 2 : 6,
                     x: 0,
-                    y: configuration.isPressed ? 2 : 5
+                    y: configuration.isPressed ? 1 : 4
                 )
-                .brightness(configuration.isPressed && isEnabled ? 0.04 : 0)
-                .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
-                .offset(y: configuration.isPressed ? 2 : 0)
-                .animation(.spring(response: 0.20, dampingFraction: 0.58), value: configuration.isPressed)
+                .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+                .offset(y: configuration.isPressed ? 1 : 0)
+                .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
         }
     }
 }
