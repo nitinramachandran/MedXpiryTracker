@@ -13,6 +13,7 @@
 		151713902FBCAC3B000CEFA5 /* NotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1517138F2FBCAC3B000CEFA5 /* NotificationScheduler.swift */; };
 		151713922FBCAC3B000CEFA5 /* AppNotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151713912FBCAC3B000CEFA5 /* AppNotificationDelegate.swift */; };
 		151713942FBCAC6D000CEFA5 /* TextScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151713932FBCAC6D000CEFA5 /* TextScannerView.swift */; };
+		154CF4932FD19AB400C039FD /* DimensionalButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CF4922FD19AB400C039FD /* DimensionalButtonStyle.swift */; };
 		158402772FC38EB300221BBC /* AlarmNotificationSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402762FC38EB300221BBC /* AlarmNotificationSound.swift */; };
 		158402792FC390A500221BBC /* MedicineNotificationRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402782FC390A500221BBC /* MedicineNotificationRoute.swift */; };
 		1584027B2FC407B400221BBC /* SnoozeOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1584027A2FC407B400221BBC /* SnoozeOption.swift */; };
@@ -46,6 +47,7 @@
 		1517138F2FBCAC3B000CEFA5 /* NotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationScheduler.swift; sourceTree = "<group>"; };
 		151713912FBCAC3B000CEFA5 /* AppNotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotificationDelegate.swift; sourceTree = "<group>"; };
 		151713932FBCAC6D000CEFA5 /* TextScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextScannerView.swift; sourceTree = "<group>"; };
+		154CF4922FD19AB400C039FD /* DimensionalButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionalButtonStyle.swift; sourceTree = "<group>"; };
 		158402762FC38EB300221BBC /* AlarmNotificationSound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmNotificationSound.swift; sourceTree = "<group>"; };
 		158402782FC390A500221BBC /* MedicineNotificationRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineNotificationRoute.swift; sourceTree = "<group>"; };
 		1584027A2FC407B400221BBC /* SnoozeOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnoozeOption.swift; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				158402782FC390A500221BBC /* MedicineNotificationRoute.swift */,
 				1584027A2FC407B400221BBC /* SnoozeOption.swift */,
 				158402882FC47D5000221BBC /* MedicineNameParser.swift */,
+				154CF4922FD19AB400C039FD /* DimensionalButtonStyle.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -271,6 +274,7 @@
 			files = (
 				1517138C2FBCAC3A000CEFA5 /* MedicineDateParser.swift in Sources */,
 				158402772FC38EB300221BBC /* AlarmNotificationSound.swift in Sources */,
+				154CF4932FD19AB400C039FD /* DimensionalButtonStyle.swift in Sources */,
 				151713922FBCAC3B000CEFA5 /* AppNotificationDelegate.swift in Sources */,
 				158402892FC47D5000221BBC /* MedicineNameParser.swift in Sources */,
 				1584027B2FC407B400221BBC /* SnoozeOption.swift in Sources */,

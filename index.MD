@@ -9,7 +9,7 @@ The app is split into a few responsibilities:
 - **UI:** `ContentView.swift` and `TextScannerView.swift`
 - **Data model:** `Medicine.swift`
 - **Validation and parsing:** `Medicine.swift`, `MedicineDateParser.swift`, `MedicineNameParser.swift`
-- **Shared UI values:** `SnoozeOption.swift`
+- **Shared UI values:** `SnoozeOption.swift`, `DimensionalButtonStyle.swift`
 - **Disk-backed storage:** `MedicineStore.swift`
 - **Notifications:** `NotificationScheduler.swift`, `AppNotificationDelegate.swift`, `AlarmNotificationSound.swift`, `MedicineNotificationRoute.swift`
 - **App launch:** `Medicine_Date_AlerterApp.swift`
@@ -262,6 +262,24 @@ The supported snooze durations: 1 day, 1 week, 1 month, and 2 months.
 #### `label(for:)`
 
 Converts a stored minute value into user-friendly text. The form, edit popup, saved medicine row, and tests all use this single function.
+
+---
+
+### `Medicine Date Alerter/DimensionalButtonStyle.swift`
+
+This file contains the shared 3D-style button treatment used by the main screen, popups, and scanner.
+
+#### `DimensionalButtonStyle`
+
+Reusable SwiftUI `ButtonStyle` that adds a subtle gradient, top highlight, border, shadow, and pressed animation.
+
+#### `Prominence`
+
+Controls whether a button appears as a filled primary action or lighter secondary action.
+
+#### `DimensionalButton`
+
+Internal view used by the style to read disabled state and pressed state while drawing the button.
 
 #### `PreviewNotificationScheduler`
 

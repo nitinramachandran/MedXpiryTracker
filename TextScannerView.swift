@@ -107,8 +107,7 @@ struct TextScannerView: View {
 
             HStack(spacing: 14) {
                 Button("Cancel", action: onClose)
-                    .buttonStyle(.bordered)
-                    .tint(ScannerPalette.blue)
+                    .buttonStyle(DimensionalButtonStyle(fill: ScannerPalette.blue, prominence: .secondary, minHeight: 42))
 
                 Button {
                     onConfirm(confirmableTexts)
@@ -116,8 +115,7 @@ struct TextScannerView: View {
                     Text(captureMode.confirmButtonTitle)
                         .frame(minWidth: 140)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(ScannerPalette.coral)
+                .buttonStyle(DimensionalButtonStyle(fill: ScannerPalette.coral, minHeight: 42))
                 .disabled(!canConfirm)
             }
             .frame(maxWidth: .infinity)
@@ -155,8 +153,7 @@ struct TextScannerView: View {
                             Label(suggestedName, systemImage: "text.magnifyingglass")
                                 .font(.headline.weight(.bold))
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(ScannerPalette.teal)
+                        .buttonStyle(DimensionalButtonStyle(fill: ScannerPalette.teal, minHeight: 42))
                     }
 
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -168,7 +165,7 @@ struct TextScannerView: View {
                                     Text(text)
                                         .lineLimit(1)
                                 }
-                                .buttonStyle(.bordered)
+                                .buttonStyle(DimensionalButtonStyle(fill: ScannerPalette.blue, prominence: .secondary, minHeight: 36))
                             }
                         }
                     }
@@ -221,8 +218,11 @@ struct TextScannerView: View {
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(selectedDateText == text ? ScannerPalette.teal : ScannerPalette.blue)
+                            .buttonStyle(DimensionalButtonStyle(
+                                fill: selectedDateText == text ? ScannerPalette.teal : ScannerPalette.blue,
+                                prominence: selectedDateText == text ? .primary : .secondary,
+                                minHeight: 38
+                            ))
                         }
                     }
                 }
@@ -641,7 +641,7 @@ struct TextScannerView: View {
             Text("Camera text scanning is only available on supported iOS devices.")
                 .multilineTextAlignment(.center)
             Button("Close", action: onClose)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(DimensionalButtonStyle(fill: .blue, minHeight: 42))
         }
         .padding()
     }

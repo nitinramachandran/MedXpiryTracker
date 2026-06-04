@@ -64,8 +64,7 @@ struct ContentView: View {
                     } label: {
                         Label("Scan medicine name", systemImage: "camera.viewfinder")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(PillEyePalette.teal)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal))
 
                     dateInputRow(
                         title: "Manufacturing date",
@@ -110,8 +109,7 @@ struct ContentView: View {
                         Label("Save medicine", systemImage: "tray.and.arrow.down.fill")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(PillEyePalette.coral)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, minHeight: 46))
                     .accessibilityIdentifier("saveMedicineButton")
                 }
 
@@ -281,14 +279,12 @@ struct ContentView: View {
                     Button("Cancel") {
                         manualDateTarget = nil
                     }
-                    .buttonStyle(.bordered)
-                    .tint(PillEyePalette.blue)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 40))
 
                     Button("Okay") {
                         saveManualDate(for: target)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(PillEyePalette.coral)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, minHeight: 40))
                 }
             }
             .padding(20)
@@ -345,8 +341,7 @@ struct ContentView: View {
                         Label("Delete", systemImage: "trash.fill")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(PillEyePalette.coral)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, minHeight: 42))
 
                     Button {
                         notificationMedicineID = nil
@@ -354,8 +349,7 @@ struct ContentView: View {
                         Text("Cancel")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
-                    .tint(PillEyePalette.blue)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 42))
                 }
             }
             .padding(20)
@@ -412,8 +406,7 @@ struct ContentView: View {
                         Text("Cancel")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
-                    .tint(PillEyePalette.blue)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 42))
 
                     Button {
                         saveMedicineEdit()
@@ -421,8 +414,7 @@ struct ContentView: View {
                         Label("Save", systemImage: "checkmark.circle.fill")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(PillEyePalette.coral)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, minHeight: 42))
                 }
             }
             .padding(20)
@@ -505,14 +497,12 @@ struct ContentView: View {
 
             HStack {
                 Button(date == nil ? "Set manually" : "Change manually", action: setAction)
-                    .buttonStyle(.bordered)
-                    .tint(PillEyePalette.blue)
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 38))
 
                 Button(action: scanAction) {
                     Label("Scan", systemImage: "text.viewfinder")
                 }
-                .buttonStyle(.bordered)
-                .tint(PillEyePalette.teal)
+                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal, prominence: .secondary, minHeight: 38))
             }
         }
     }
