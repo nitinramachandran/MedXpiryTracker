@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MedXpiryTracker - App Documentation</title>
+<style>
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: #1c2a33; line-height: 1.55; max-width: 760px; margin: 40px auto; padding: 0 28px; }
+  h1 { color: #005c6b; border-bottom: 2px solid #00a8a0; padding-bottom: 8px; }
+  h2 { color: #005c6b; margin-top: 32px; border-bottom: 1px solid #d8eeed; padding-bottom: 4px; }
+  h3 { color: #006e7a; margin-top: 22px; }
+  code, .mono { font-family: "SF Mono", Menlo, Consolas, monospace; background: #f3f7f7; padding: 1px 5px; border-radius: 4px; font-size: 0.94em; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #d2e3e3; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e8f6f5; color: #005c6b; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+  .meta { color: #4d6a73; font-size: 0.95em; }
+  .callout { background: #fff7eb; border-left: 4px solid #f5a623; padding: 10px 14px; margin: 16px 0; border-radius: 4px; }
+  .footer { color: #6b818a; font-size: 0.85em; margin-top: 40px; border-top: 1px solid #d8eeed; padding-top: 10px; }
+</style>
+</head>
+<body>
+
+<h1>MedXpiryTracker</h1>
+<p class="meta">
+  Medicine expiry tracking and reminder app for iOS.<br>
+  Bundle identifier: <code>com.nixutils.Medicine-Date-Alerter</code><br>
+  Marketing version: 1.0<br>
+  Minimum supported iOS: 26.5
+</p>
+
+<h2>1. Overview</h2>
+<p>
+  MedXpiryTracker (internally codenamed <em>PillEye</em>) is a single-screen iOS application that
+  helps users keep track of the manufacturing and expiry dates of medicines and household
+  pharmaceuticals. The app schedules a local notification one day before each saved
+  medicine's expiry date so the user can dispose of, refill, or use the item in time.
+</p>
+<p>
+  The user enters medicine details either by typing or by using the on-device camera to
+  scan label text using Apple's Vision text recognition framework. All data is stored
+  locally inside the app's sandbox; no servers, accounts, or analytics services are
+  contacted.
+</p>
+
+<h2>2. Key Features</h2>
+<ul>
+  <li><strong>Manual entry</strong> of medicine name, manufacturing date, expiry date, and snooze interval.</li>
+  <li><strong>Camera-based text scanning</strong> for medicine names and dates using <code>VisionKit</code> + <code>Vision</code>.</li>
+  <li><strong>Local notifications</strong> scheduled one day before expiry, with Snooze and Cancel actions.</li>
+  <li><strong>Persistent on-device storage</strong> as encrypted JSON inside Application Support.</li>
+  <li><strong>Edit and delete</strong> saved medicines via row swipe actions.</li>
+  <li><strong>Light, friendly UI</strong> with accessibility identifiers for UI tests.</li>
+</ul>
+
+<h2>3. App Architecture</h2>
+<p>
+  The app is built with SwiftUI and Swift Concurrency (<code>async</code>/<code>await</code>).
+  It is organized into a small number of single-responsibility files:
+</p>
+<table>
+  <tr><th>File</th><th>Responsibility</th></tr>
+  <tr><td><code>Medicine_Date_AlerterApp.swift</code></td><td>Application entry point and root scene.</td></tr>
+  <tr><td><code>ContentView.swift</code></td><td>Main form, saved list, popups, and notification routing handlers.</td></tr>
+  <tr><td><code>Medicine.swift</code></td><td>Medicine model, validation rules, and update DTO.</td></tr>
+  <tr><td><code>MedicineStore.swift</code></td><td>Observable store: load, save, update, delete, import/export to disk.</td></tr>
+  <tr><td><code>NotificationScheduler.swift</code></td><td>Wraps <code>UNUserNotificationCenter</code> for scheduling and cancellation.</td></tr>
+  <tr><td><code>AppNotificationDelegate.swift</code></td><td>Foreground notification presentation and tap routing.</td></tr>
+  <tr><td><code>MedicineNotificationRoute.swift</code></td><td>Bridges notification taps to the active view.</td></tr>
+  <tr><td><code>TextScannerView.swift</code></td><td>Camera viewfinder with on-device text recognition.</td></tr>
+  <tr><td><code>MedicineDateParser.swift</code></td><td>Parses scanned strings into <code>Date</code> values.</td></tr>
+  <tr><td><code>MedicineNameParser.swift</code></td><td>Selects the most likely medicine name from scanned text.</td></tr>
+  <tr><td><code>SnoozeOption.swift</code></td><td>Standard snooze intervals and label formatting.</td></tr>
+  <tr><td><code>AlarmNotificationSound.swift</code></td><td>Applies the urgency / sound on the reminder notification.</td></tr>
+  <tr><td><code>DimensionalButtonStyle.swift</code></td><td>Custom SwiftUI button style used app-wide.</td></tr>
+</table>
+
+<h2>4. User Flow</h2>
+<ol>
+  <li><strong>Launch</strong>: the app loads any previously saved medicines from disk on a background task.</li>
+  <li><strong>Add medicine</strong>: the user enters or scans a medicine name.</li>
+  <li><strong>Set dates</strong>: the user either picks the manufacturing/expiry date manually or scans the printed label.</li>
+  <li><strong>Choose snooze</strong>: the user picks a snooze duration (used if they snooze the reminder).</li>
+  <li><strong>Save</strong>: the app validates the form, persists the medicine to disk, and schedules a local notification.</li>
+  <li><strong>Reminder</strong>: one day before expiry, iOS delivers a notification with Snooze and Cancel actions.</li>
+  <li><strong>Tap notification</strong>: tapping opens the details popup with Delete and Cancel buttons.</li>
+  <li><strong>Edit or delete</strong>: swipe a row in the saved list to edit snooze or delete the medicine.</li>
+</ol>
+
+<h2>5. Permissions</h2>
+<table>
+  <tr><th>Permission</th><th>Why it is needed</th><th>Info.plist key</th></tr>
+  <tr>
+    <td>Camera</td>
+    <td>To scan the printed medicine name and dates on the package label using on-device Vision text recognition.</td>
+    <td><code>NSCameraUsageDescription</code>: "Scan medicine labels and dates so you can edit and save expiry reminders."</td>
+  </tr>
+  <tr>
+    <td>Notifications</td>
+    <td>To deliver the expiry reminder one day before the medicine expires. Requested with alert, sound, and badge.</td>
+    <td>Requested at runtime via <code>UNUserNotificationCenter.requestAuthorization</code>.</td>
+  </tr>
+</table>
+
+<h2>6. Privacy</h2>
+<ul>
+  <li>The app does <strong>not</strong> collect or transmit any personal data.</li>
+  <li>Scanned text is processed entirely on-device by Apple's Vision framework.</li>
+  <li>Saved medicine records live in the app's private Application Support directory and are removed when the app is deleted.</li>
+  <li>The data file is written with <code>FileProtectionType.complete</code>, so it is encrypted at rest and inaccessible while the device is locked.</li>
+  <li>No third-party SDKs, no analytics, no advertising frameworks are linked into the app.</li>
+</ul>
+
+<h2>7. Data Storage</h2>
+<p>
+  Medicines are persisted as ISO-8601-formatted, pretty-printed JSON at:
+</p>
+<p><code>~/Library/Application Support/PillEye/medicines.json</code> (within the app sandbox)</p>
+<p>
+  The store supports <code>exportData()</code> and <code>importData(_:)</code> for use in future
+  backup or migration features. There is no fixed cap on the number of saved entries; the
+  practical limit is the iOS 64-pending-notification budget per app.
+</p>
+
+<h2>8. Accessibility</h2>
+<ul>
+  <li>Standard SwiftUI controls provide VoiceOver labels out of the box.</li>
+  <li>Key controls include accessibility identifiers (<code>medicineNameField</code>, <code>saveMedicineButton</code>, <code>validationMessage</code>) for automated UI tests.</li>
+  <li>The interface uses Dynamic Type-friendly fonts and high-contrast palette colours.</li>
+  <li>The app is locked to light mode for predictable contrast on coloured form rows.</li>
+</ul>
+
+<h2>9. Build and Distribution</h2>
+<table>
+  <tr><th>Setting</th><th>Value</th></tr>
+  <tr><td>Bundle identifier</td><td><code>com.nixutils.Medicine-Date-Alerter</code></td></tr>
+  <tr><td>Display name</td><td>MedXpiryTracker</td></tr>
+  <tr><td>Marketing version</td><td>1.0</td></tr>
+  <tr><td>Deployment target</td><td>iOS 26.5</td></tr>
+  <tr><td>Target devices</td><td>iPhone and iPad (Universal)</td></tr>
+  <tr><td>Code signing</td><td>Automatic (development team BPH648379N)</td></tr>
+  <tr><td>Frameworks used</td><td>SwiftUI, Foundation, UserNotifications, VisionKit, Vision, AVFoundation</td></tr>
+</table>
+
+<div class="callout">
+  <strong>Note:</strong> the camera usage description shown in the App Store privacy section
+  is taken from the value of <code>INFOPLIST_KEY_NSCameraUsageDescription</code> in the target's
+  build settings.
+</div>
+
+<h2>10. How to Use the App</h2>
+<h3>10.1 Add a medicine</h3>
+<ol>
+  <li>Tap the medicine name field and type the name, or tap <em>Scan medicine name</em> and point the camera at the package.</li>
+  <li>Inside the scanner, tap the recognised text you want, then press <em>OK</em>.</li>
+  <li>For the manufacturing date, either tap <em>Set manually</em> to use the date picker, or tap <em>Scan</em> to read the printed date.</li>
+  <li>Repeat for the expiry date.</li>
+  <li>Pick a snooze duration. This is used when you tap <em>Snooze</em> on the reminder notification.</li>
+  <li>Tap <em>Save medicine</em>. If something is missing or the expiry date is not after the manufacturing date, the form will show an inline message.</li>
+</ol>
+
+<h3>10.2 React to a reminder</h3>
+<ol>
+  <li>One day before the expiry date the device will show an "Expiry reminder" notification.</li>
+  <li>From the lock screen or notification center, you can tap <em>Snooze</em> to re-fire later, or <em>Cancel</em> to dismiss.</li>
+  <li>Tapping the notification body opens the app and shows the medicine details popup with Delete and Cancel actions.</li>
+</ol>
+
+<h3>10.3 Edit or delete a saved medicine</h3>
+<ol>
+  <li>In the <em>Saved medicines</em> list, swipe a row from right to left.</li>
+  <li>Tap <em>Edit</em> to change the snooze interval, then tap <em>Save</em>. The notification is re-scheduled.</li>
+  <li>Tap <em>Delete</em> to remove the medicine. The scheduled notification is cancelled too.</li>
+</ol>
+
+<h2>11. Notifications - Behaviour Details</h2>
+<ul>
+  <li>The reminder fires at the same time of day as the moment the medicine was saved, one calendar day before <code>expiryDate</code>.</li>
+  <li>If that moment has already passed when the medicine is saved, the reminder is scheduled one minute into the future so the user still sees it.</li>
+  <li>Each notification carries the medicine's UUID and snooze interval in <code>userInfo</code>, never the medicine name or label text.</li>
+  <li>The notification category <code>MEDICINE_EXPIRY_REMINDER</code> exposes two actions: <code>SNOOZE_MEDICINE_REMINDER</code> (snooze by the saved interval) and <code>CANCEL_MEDICINE_REMINDER</code> (mark dismissed).</li>
+</ul>
+
+<h2>12. App Store Submission Checklist</h2>
+<ul>
+  <li>App icon: 1024x1024 PNG provided at <code>Assets.xcassets/AppIcon.appiconset/AppIcon.png</code> with light, dark, and tinted variants.</li>
+  <li>Display name: MedXpiryTracker.</li>
+  <li>Camera privacy string: present.</li>
+  <li>Notification authorization: requested only when the user saves the first medicine.</li>
+  <li>No background modes, no entitlements beyond default.</li>
+  <li>No third-party SDK disclosures required.</li>
+  <li>Privacy nutrition labels: Data Not Collected.</li>
+</ul>
+
+<h2>13. Testing</h2>
+<ul>
+  <li>Unit tests live in <code>Medicine Date AlerterTests</code> and use the Swift Testing framework.</li>
+  <li>UI tests live in <code>Medicine Date AlerterUITests</code> and use the XCUIAutomation framework.</li>
+  <li>Tests can construct <code>MedicineStore</code> with a fake <code>NotificationScheduling</code> and <code>storageURL: nil</code> to stay isolated from real notifications and disk.</li>
+</ul>
+
+<p class="footer">
+  Document generated for the iOS Developer Portal submission package.
+</p>
+
+</body>
+</html>
