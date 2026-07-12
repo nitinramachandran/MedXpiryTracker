@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MedXpiryTracker — App Documentation</title>
+<style>
+    @page { margin: 2.2cm 2cm; }
+    body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        color: #1a1a2e;
+        line-height: 1.55;
+        font-size: 11pt;
+        max-width: 46em;
+        margin: 0 auto;
+    }
+    .cover {
+        text-align: center;
+        padding: 120px 0 60px 0;
+        page-break-after: always;
+    }
+    .cover .logo {
+        font-size: 42pt;
+        margin-bottom: 8px;
+    }
+    .cover h1 {
+        font-size: 30pt;
+        margin: 0 0 6px 0;
+        color: #0f4c81;
+        border: none;
+    }
+    .cover .subtitle {
+        font-size: 14pt;
+        color: #555;
+        margin-bottom: 60px;
+    }
+    .cover .meta {
+        display: inline-block;
+        text-align: left;
+        color: #444;
+        font-size: 10.5pt;
+        border-top: 2px solid #0f4c81;
+        padding-top: 16px;
+    }
+    h1 {
+        color: #0f4c81;
+        font-size: 17pt;
+        border-bottom: 2px solid #0f4c81;
+        padding-bottom: 4px;
+        margin-top: 34px;
+    }
+    h2 {
+        color: #16608f;
+        font-size: 13pt;
+        margin-top: 24px;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0;
+        font-size: 10pt;
+    }
+    th {
+        background: #0f4c81;
+        color: #fff;
+        text-align: left;
+        padding: 7px 10px;
+    }
+    td {
+        border: 1px solid #c9d6e2;
+        padding: 6px 10px;
+        vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #f2f6fa; }
+    ul, ol { margin: 8px 0; }
+    li { margin: 3px 0; }
+    .note {
+        background: #eef5fb;
+        border-left: 4px solid #0f4c81;
+        padding: 10px 14px;
+        margin: 14px 0;
+    }
+    .footer {
+        margin-top: 40px;
+        padding-top: 10px;
+        border-top: 1px solid #ccc;
+        color: #888;
+        font-size: 9pt;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+
+<div class="cover">
+    <div class="logo">💊</div>
+    <h1>MedXpiryTracker</h1>
+    <div class="subtitle">Medicine Expiry Tracking &amp; Reminder App for iPhone<br>Product &amp; Functionality Documentation</div>
+    <div class="meta">
+        <strong>Version:</strong> 1.0 (Build 2)<br>
+        <strong>Platform:</strong> iOS (iPhone only)<br>
+        <strong>Publisher:</strong> nixutils<br>
+        <strong>Document date:</strong> July 2026
+    </div>
+</div>
+
+<h1>1. Purpose</h1>
+<p>
+Expired medicines are easy to overlook. Households accumulate tablets, syrups, ointments, and drops over time, and expiry dates printed in small text on strips and boxes are rarely checked until a medicine is needed — sometimes after it has already expired. Taking expired medication can be ineffective at best and harmful at worst.
+</p>
+<p>
+<strong>MedXpiryTracker</strong> solves this by acting as a personal medicine-cabinet assistant. Users record each medicine once — by scanning the label with the camera or entering details manually — and the app proactively reminds them <strong>one day before the medicine expires</strong>, so it can be replaced or disposed of in time.
+</p>
+<div class="note">
+<strong>Design principle — privacy first:</strong> all data stays on the user's device. The app has no account system, no analytics, and performs no network communication. Records are stored encrypted in the app's private sandbox and are removed automatically when the app is uninstalled.
+</div>
+
+<h1>2. Key Features</h1>
+
+<h2>2.1 Camera label scanning (OCR)</h2>
+<ul>
+    <li>A built-in scanner (Apple VisionKit) reads printed text live from the medicine label through the camera.</li>
+    <li><strong>Name capture:</strong> the scanner presents short, name-like candidates (1–3 words on the same row, e.g. “Crocin Advance”, “Dolo 650”) and ignores sentence-like label text such as dosage instructions. The user picks the correct name.</li>
+    <li><strong>Date capture:</strong> recognized text is automatically filtered down to date-like values only, so unrelated label text cannot be captured into the manufacturing or expiry date fields. The user taps the correct date to confirm.</li>
+    <li>The camera view is framed to a focused rectangular area so users can aim precisely at the relevant portion of the label.</li>
+</ul>
+
+<h2>2.2 Manual entry</h2>
+<ul>
+    <li>Every field can also be entered without the camera: the name via keyboard, and both dates via a centred date-picker popup.</li>
+    <li>Flexible date parsing understands the common formats printed on medicine packaging (e.g. <em>08/2027</em>, <em>AUG 2027</em>, <em>2027-08</em>, full dates).</li>
+</ul>
+
+<h2>2.3 Validation</h2>
+<ul>
+    <li>A medicine cannot be saved without a name.</li>
+    <li>The expiry date must be later than the manufacturing date.</li>
+    <li>Validation failures are shown as clear, human-readable messages instead of technical errors.</li>
+</ul>
+
+<h2>2.4 Expiry reminders (local notifications)</h2>
+<ul>
+    <li>When a medicine is saved, the app schedules a local notification for <strong>one day before its expiry date</strong>.</li>
+    <li>Reminders play a distinct alarm sound so they are noticed among ordinary notifications.</li>
+    <li>Tapping a reminder opens the app directly on that medicine's details, with the option to delete the record once the medicine is discarded. This works even when the app is launched from the notification itself.</li>
+</ul>
+
+<h2>2.5 Snooze</h2>
+<ul>
+    <li>Each medicine has a configurable snooze interval: <strong>1 day, 1 week, 1 month, or 2 months</strong>.</li>
+    <li>The snooze can be chosen when the medicine is added and changed later from the saved-medicine edit popup.</li>
+</ul>
+
+<h2>2.6 Medicine list management</h2>
+<ul>
+    <li>All saved medicines appear in a list on the main screen showing name and dates, with expired items clearly identifiable.</li>
+    <li>Records can be edited (snooze duration) or deleted at any time; deleting a medicine also cancels its scheduled reminder.</li>
+    <li>If saving to disk fails, the previous state is restored so the on-screen list never disagrees with what is stored.</li>
+</ul>
+
+<h1>3. How It Works — Typical Flow</h1>
+<ol>
+    <li><strong>Add a medicine:</strong> the user opens the app and either taps the scan button to capture the name and dates from the label, or types/picks them manually.</li>
+    <li><strong>Choose a snooze interval</strong> (defaults are provided) and save. The app validates the input and schedules the expiry reminder.</li>
+    <li><strong>Live normally:</strong> nothing further is required. The medicine sits in the saved list.</li>
+    <li><strong>Get reminded:</strong> one day before expiry, an alarm notification fires. Tapping it opens the medicine's details.</li>
+    <li><strong>Act:</strong> the user replaces or disposes of the medicine and deletes the record (or snoozes the reminder).</li>
+</ol>
+
+<h1>4. Data Storage &amp; Privacy</h1>
+<table>
+    <tr><th>Aspect</th><th>Behaviour</th></tr>
+    <tr><td>Storage location</td><td>JSON file in the app's private <em>Application Support</em> sandbox directory.</td></tr>
+    <tr><td>Encryption</td><td>Complete file protection — the data file is encrypted and inaccessible while the iPhone is locked.</td></tr>
+    <tr><td>Network</td><td>None. The app makes no network requests and collects no analytics.</td></tr>
+    <tr><td>Accounts</td><td>None required. The app works fully offline from first launch.</td></tr>
+    <tr><td>Uninstall</td><td>iOS deletes the sandbox, removing all stored medicine data automatically.</td></tr>
+    <tr><td>Portability</td><td>The storage layer supports exporting and importing the full medicine list as JSON.</td></tr>
+    <tr><td>Camera</td><td>Used only for live label scanning, with the user's permission. Images are not stored.</td></tr>
+</table>
+
+<h1>5. Technical Overview</h1>
+<table>
+    <tr><th>Item</th><th>Detail</th></tr>
+    <tr><td>App name</td><td>MedXpiryTracker (project name: Medicine Date Alerter)</td></tr>
+    <tr><td>Bundle identifier</td><td>com.nixutils.Medicine-Date-Alerter</td></tr>
+    <tr><td>Platform</td><td>iOS, iPhone only, portrait-oriented, light appearance</td></tr>
+    <tr><td>UI framework</td><td>SwiftUI</td></tr>
+    <tr><td>Text recognition</td><td>VisionKit live data scanner (on-device OCR)</td></tr>
+    <tr><td>Reminders</td><td>UserNotifications framework (local notifications, custom alarm sound)</td></tr>
+    <tr><td>Concurrency</td><td>Swift async/await; disk I/O off the main thread</td></tr>
+    <tr><td>Persistence</td><td>Codable JSON with stable date encoding</td></tr>
+    <tr><td>Testing</td><td>Unit tests (Swift Testing) and UI tests (XCUIAutomation); the store supports injected schedulers and memory-only storage for tests</td></tr>
+</table>
+
+<h2>5.1 Architecture at a glance</h2>
+<table>
+    <tr><th>Component</th><th>Responsibility</th></tr>
+    <tr><td>ContentView</td><td>Main screen: add-medicine form, saved list, popups for dates, details, and editing.</td></tr>
+    <tr><td>TextScannerView</td><td>Camera sheet with live OCR, name-candidate selection, and date filtering.</td></tr>
+    <tr><td>MedicineStore</td><td>Repository: validation, in-memory list, JSON persistence, reminder scheduling, export/import.</td></tr>
+    <tr><td>Medicine / MedicineValidator</td><td>Data model, computed reminder/expiry state, and save-time validation rules.</td></tr>
+    <tr><td>MedicineDateParser / MedicineNameParser</td><td>Turn raw OCR text into clean dates and plausible medicine names.</td></tr>
+    <tr><td>NotificationScheduler / AlarmNotificationSound</td><td>Schedule and cancel local expiry reminders with an alarm sound.</td></tr>
+    <tr><td>AppNotificationDelegate / MedicineNotificationRoute</td><td>Route notification taps to the right medicine's details, including cold-launch taps.</td></tr>
+</table>
+
+<h1>6. Intended Audience</h1>
+<p>
+MedXpiryTracker is designed for anyone who keeps medicines at home — individuals managing their own prescriptions, parents maintaining a family medicine cabinet, and caregivers looking after others. No technical knowledge is required: scanning a label and saving takes seconds, and the app then works silently in the background.
+</p>
+
+<div class="footer">
+MedXpiryTracker — Product &amp; Functionality Documentation · Version 1.0 (Build 2) · © 2026 nixutils
+</div>
+
+</body>
+</html>

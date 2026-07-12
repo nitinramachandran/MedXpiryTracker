@@ -50,6 +50,14 @@ struct Medicine_Date_AlerterTests {
         #expect(candidates == ["Dolo-650", "Crocin Advance", "Vitamin D3 1000", "Crocin"])
     }
 
+    /// Verifies text spanning two label rows is never merged into one name candidate.
+    @Test func medicineNameParserDoesNotMergeRows() {
+        let candidates = MedicineNameParser.candidates(from: ["ZINCOVIT\nSyrup"])
+
+        #expect(candidates == ["Zincovit", "Syrup"])
+        #expect(MedicineNameParser.candidate(from: "ZINCOVIT\nSyrup") == nil)
+    }
+
     /// Verifies snooze durations use one shared label source.
     @Test func snoozeOptionLabelsAreUserFriendly() {
         #expect(SnoozeOption.allDurationsInMinutes == [1440, 10080, 43200, 86400])

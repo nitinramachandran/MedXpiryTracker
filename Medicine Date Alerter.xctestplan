@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "63CB99F3-5B92-4981-961F-5687290020B3",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Medicine Date Alerter.xcodeproj",
+      "identifier" : "1517135E2FBCA61C000CEFA5",
+      "name" : "Medicine Date Alerter"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Medicine Date Alerter.xcodeproj",
+        "identifier" : "1517136B2FBCA61E000CEFA5",
+        "name" : "Medicine Date AlerterTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Medicine Date Alerter.xcodeproj",
+        "identifier" : "151713752FBCA61E000CEFA5",
+        "name" : "Medicine Date AlerterUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

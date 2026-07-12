@@ -12,40 +12,56 @@ enum MedicineNameParser {
         .union(CharacterSet(charactersIn: "-"))
 
     /// Returns unique medicine-name candidates from OCR text.
+    ///
+    /// One OCR string can span several label rows. A medicine name never continues onto
+    /// the next row, so each row is evaluated on its own instead of being merged.
     static func candidates(from texts: [String]) -> [String] {
         var seen: Set<String> = []
         var candidates: [String] = []
 
         for text in texts {
-            guard let candidate = candidate(from: text) else { continue }
-            guard !seen.contains(candidate) else { continue }
+            for row in rows(in: text) {
+                guard let candidate = candidate(from: row) else { continue }
+                guard !seen.contains(candidate) else { continue }
 
-            seen.insert(candidate)
-            candidates.append(candidate)
+                seen.insert(candidate)
+                candidates.append(candidate)
+            }
         }
 
         return candidates
     }
 
-    /// Returns one cleaned candidate, or `nil` when the OCR text looks like a sentence.
+    /// Returns one cleaned candidate, or `nil` when the OCR text looks like a sentence
+    /// or spans more than one label row.
     static func candidate(from text: String) -> String? {
-        let cleaned = text
+        let textRows = rows(in: text)
+        guard textRows.count == 1, let row = textRows.first else { return nil }
+
+        let cleaned = row
             .components(separatedBy: medicineNameSymbols)
             .joined()
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: .whitespaces)
             .trimmingCharacters(in: .punctuationCharacters)
 
         guard !cleaned.isEmpty else { return nil }
         guard cleaned.rangeOfCharacter(from: .letters) != nil else { return nil }
 
         let words = cleaned
-            .split(whereSeparator: { $0.isWhitespace || $0.isNewline })
+            .split(whereSeparator: { $0.isWhitespace })
             .map(String.init)
 
         guard (1...maximumWords).contains(words.count) else { return nil }
         guard words.allSatisfy(isAllowedWord(_:)) else { return nil }
 
         return words.joined(separator: " ").localizedCapitalized
+    }
+
+    /// Splits OCR text into its non-empty label rows.
+    private static func rows(in text: String) -> [String] {
+        text.split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
     }
 
     private static func isAllowedWord(_ word: String) -> Bool {
