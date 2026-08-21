@@ -10,7 +10,7 @@ struct Medicine: Identifiable, Codable, Hashable {
     var name: String
     var manufacturingDate: Date
     var expiryDate: Date
-    var snoozeMinutes: Int
+    var reminderLeadDays: Int
     let createdAt: Date
 
     /// Creates a new medicine record.
@@ -22,23 +22,40 @@ struct Medicine: Identifiable, Codable, Hashable {
         name: String,
         manufacturingDate: Date,
         expiryDate: Date,
-        snoozeMinutes: Int = 60,
+        reminderLeadDays: Int = 1,
         createdAt: Date = Date()
     ) {
         self.id = id
         self.name = name.trimmingCharacters(in: .whitespacesAndNewlines).localizedCapitalized
         self.manufacturingDate = manufacturingDate
         self.expiryDate = expiryDate
-        self.snoozeMinutes = snoozeMinutes
+        self.reminderLeadDays = reminderLeadDays
         self.createdAt = createdAt
+    }
+
+    /// Restores a medicine from saved JSON.
+    ///
+    /// `reminderLeadDays` was added in version 1.2, so files and backups written by
+    /// older versions do not contain it. Decoding falls back to the original one-day
+    /// lead instead of failing, which keeps old data and old backups importable.
+    /// Older files also carry a per-medicine `snoozeMinutes` value; it is ignored now
+    /// that the notification snooze uses one fixed duration.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        manufacturingDate = try container.decode(Date.self, forKey: .manufacturingDate)
+        expiryDate = try container.decode(Date.self, forKey: .expiryDate)
+        reminderLeadDays = try container.decodeIfPresent(Int.self, forKey: .reminderLeadDays) ?? 1
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
     }
 
     /// The date when the app should remind the user.
     ///
     /// This is a computed property: it behaves like a field, but Swift calculates it
-    /// each time it is read. The reminder is one day before the expiry date.
+    /// each time it is read. The reminder fires `reminderLeadDays` before expiry.
     var reminderDate: Date {
-        Calendar.current.date(byAdding: .day, value: -1, to: expiryDate) ?? expiryDate
+        Calendar.current.date(byAdding: .day, value: -reminderLeadDays, to: expiryDate) ?? expiryDate
     }
 
     /// Returns `true` when the medicine expiry date has already passed.
@@ -49,13 +66,13 @@ struct Medicine: Identifiable, Codable, Hashable {
 
 /// Describes editable changes to an existing medicine.
 ///
-/// Today the UI only changes `snoozeMinutes`, but this struct already has fields for
+/// Today the UI only changes `reminderLeadDays`, but this struct already has fields for
 /// name and dates so future edit screens can reuse the same store update function.
 struct MedicineUpdate {
     var name: String?
     var manufacturingDate: Date?
     var expiryDate: Date?
-    var snoozeMinutes: Int?
+    var reminderLeadDays: Int?
 }
 
 /// All validation failures that can happen while saving a medicine.

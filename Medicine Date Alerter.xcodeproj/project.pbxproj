@@ -16,7 +16,7 @@
 		154CF4932FD19AB400C039FD /* DimensionalButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154CF4922FD19AB400C039FD /* DimensionalButtonStyle.swift */; };
 		158402772FC38EB300221BBC /* AlarmNotificationSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402762FC38EB300221BBC /* AlarmNotificationSound.swift */; };
 		158402792FC390A500221BBC /* MedicineNotificationRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402782FC390A500221BBC /* MedicineNotificationRoute.swift */; };
-		1584027B2FC407B400221BBC /* SnoozeOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1584027A2FC407B400221BBC /* SnoozeOption.swift */; };
+		1584027B2FC407B400221BBC /* ReminderLeadOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1584027A2FC407B400221BBC /* ReminderLeadOption.swift */; };
 		158402892FC47D5000221BBC /* MedicineNameParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402882FC47D5000221BBC /* MedicineNameParser.swift */; };
 /* End PBXBuildFile section */
 
@@ -51,7 +51,7 @@
 		154CF4922FD19AB400C039FD /* DimensionalButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionalButtonStyle.swift; sourceTree = "<group>"; };
 		158402762FC38EB300221BBC /* AlarmNotificationSound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmNotificationSound.swift; sourceTree = "<group>"; };
 		158402782FC390A500221BBC /* MedicineNotificationRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineNotificationRoute.swift; sourceTree = "<group>"; };
-		1584027A2FC407B400221BBC /* SnoozeOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnoozeOption.swift; sourceTree = "<group>"; };
+		1584027A2FC407B400221BBC /* ReminderLeadOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderLeadOption.swift; sourceTree = "<group>"; };
 		158402882FC47D5000221BBC /* MedicineNameParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineNameParser.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -114,7 +114,7 @@
 				151713932FBCAC6D000CEFA5 /* TextScannerView.swift */,
 				158402762FC38EB300221BBC /* AlarmNotificationSound.swift */,
 				158402782FC390A500221BBC /* MedicineNotificationRoute.swift */,
-				1584027A2FC407B400221BBC /* SnoozeOption.swift */,
+				1584027A2FC407B400221BBC /* ReminderLeadOption.swift */,
 				158402882FC47D5000221BBC /* MedicineNameParser.swift */,
 				154CF4922FD19AB400C039FD /* DimensionalButtonStyle.swift */,
 			);
@@ -209,7 +209,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2650;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					1517135E2FBCA61C000CEFA5 = {
 						CreatedOnToolsVersion = 26.5;
@@ -279,7 +279,7 @@
 				154CF4932FD19AB400C039FD /* DimensionalButtonStyle.swift in Sources */,
 				151713922FBCAC3B000CEFA5 /* AppNotificationDelegate.swift in Sources */,
 				158402892FC47D5000221BBC /* MedicineNameParser.swift in Sources */,
-				1584027B2FC407B400221BBC /* SnoozeOption.swift in Sources */,
+				1584027B2FC407B400221BBC /* ReminderLeadOption.swift in Sources */,
 				151713942FBCAC6D000CEFA5 /* TextScannerView.swift in Sources */,
 				158402792FC390A500221BBC /* MedicineNotificationRoute.swift in Sources */,
 				1517138A2FBCAC39000CEFA5 /* Medicine.swift in Sources */,
@@ -353,6 +353,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = BPH648379N;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -376,6 +377,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -416,6 +418,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = BPH648379N;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -432,6 +435,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -444,7 +448,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = BPH648379N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = MedXpiryTracker;
@@ -481,7 +484,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = BPH648379N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = MedXpiryTracker;
@@ -517,7 +519,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
@@ -541,7 +542,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
@@ -565,7 +565,6 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
 				MARKETING_VERSION = 1.1;
@@ -587,7 +586,6 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = BPH648379N;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PillTracker;
 				MARKETING_VERSION = 1.1;

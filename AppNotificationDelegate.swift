@@ -62,7 +62,9 @@ final class AppNotificationDelegate: NSObject, UIApplicationDelegate, UNUserNoti
 
         switch response.actionIdentifier {
         case LocalNotificationScheduler.snoozeActionIdentifier:
-            let minutes = userInfo["snoozeMinutes"] as? Int ?? 60
+            // Notifications delivered by older app versions still carry a configured
+            // per-medicine snooze in userInfo; honor it once, then the fixed default applies.
+            let minutes = userInfo["snoozeMinutes"] as? Int ?? LocalNotificationScheduler.snoozeMinutes
             let content = response.notification.request.content.mutableCopy() as? UNMutableNotificationContent
             guard let content else { return }
             AlarmNotificationSound.applyUrgency(to: content)

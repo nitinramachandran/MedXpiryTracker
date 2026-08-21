@@ -58,13 +58,14 @@ struct Medicine_Date_AlerterTests {
         #expect(MedicineNameParser.candidate(from: "ZINCOVIT\nSyrup") == nil)
     }
 
-    /// Verifies snooze durations use one shared label source.
-    @Test func snoozeOptionLabelsAreUserFriendly() {
-        #expect(SnoozeOption.allDurationsInMinutes == [1440, 10080, 43200, 86400])
-        #expect(SnoozeOption.label(for: 1440) == "1 Day")
-        #expect(SnoozeOption.label(for: 10080) == "1 Week")
-        #expect(SnoozeOption.label(for: 43200) == "1 Month")
-        #expect(SnoozeOption.label(for: 86400) == "2 Months")
+    /// Verifies reminder lead times use one shared label source.
+    @Test func reminderLeadOptionLabelsAreUserFriendly() {
+        #expect(ReminderLeadOption.allDays == [1, 7, 14, 30, 60])
+        #expect(ReminderLeadOption.label(for: 1) == "1 Day")
+        #expect(ReminderLeadOption.label(for: 7) == "1 Week")
+        #expect(ReminderLeadOption.label(for: 14) == "2 Weeks")
+        #expect(ReminderLeadOption.label(for: 30) == "1 Month")
+        #expect(ReminderLeadOption.label(for: 60) == "2 Months")
     }
 
     /// Verifies the reminder is calculated as one day before expiry.
@@ -104,6 +105,41 @@ struct Medicine_Date_AlerterTests {
         #expect(Calendar.current.component(.year, from: dates[2]) == 2028)
     }
 
+    /// Verifies full day/month/year dates parse as one date, not as a month/year prefix.
+    ///
+    /// Regression test: the numeric pattern once listed the month/year alternative
+    /// first, so `01/05/2026` matched as just `01/05` and became January 2005.
+    @Test func dateParserParsesFullNumericDates() throws {
+        #expect(MedicineDateParser.extractDateStrings(from: "EXP 01/05/2026") == ["01/05/2026"])
+
+        let date = try #require(MedicineDateParser.firstDate(from: "EXP 01/05/2026"))
+        #expect(Calendar.current.component(.day, from: date) == 1)
+        #expect(Calendar.current.component(.month, from: date) == 5)
+        #expect(Calendar.current.component(.year, from: date) == 2026)
+
+        let shortYear = try #require(MedicineDateParser.firstDate(from: "15-08-27"))
+        #expect(Calendar.current.component(.day, from: shortYear) == 15)
+        #expect(Calendar.current.component(.month, from: shortYear) == 8)
+        #expect(Calendar.current.component(.year, from: shortYear) == 2027)
+    }
+
+    /// Verifies the OCR O→0 fix repairs misread digits without corrupting month names.
+    ///
+    /// Regression test: replacing every letter O once turned `NOV` into `N0V` and
+    /// `OCT` into `0CT`, so those months could never be recognized.
+    @Test func dateParserFixesMisreadZerosWithoutBreakingMonthNames() throws {
+        let november = try #require(MedicineDateParser.firstDate(from: "EXP NOV 2O26"))
+        #expect(Calendar.current.component(.month, from: november) == 11)
+        #expect(Calendar.current.component(.year, from: november) == 2026)
+
+        let october = try #require(MedicineDateParser.firstDate(from: "EXP OCT-2027"))
+        #expect(Calendar.current.component(.month, from: october) == 10)
+        #expect(Calendar.current.component(.year, from: october) == 2027)
+
+        let misreadRun = try #require(MedicineDateParser.firstDate(from: "EXP 08/2OO6"))
+        #expect(Calendar.current.component(.year, from: misreadRun) == 2006)
+    }
+
     /// Verifies OCR-like text can be parsed into manufacturing and expiry dates.
     @Test func dateParserInfersManufacturingAndExpiryDates() throws {
         let result = try #require(MedicineDateParser.inferredManufacturingAndExpiryDates(from: "MFG 05/2026 EXP 08/2027"))
@@ -121,7 +157,7 @@ struct Medicine_Date_AlerterTests {
         let manufacturing = try #require(makeDate(year: 2026, month: 5, day: 1))
         let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
 
-        try await store.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry, snoozeMinutes: 15)
+        try await store.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry)
 
         #expect(store.medicines.count == 1)
         #expect(scheduler.scheduledMedicineNames == ["Cetirizine"])
@@ -136,27 +172,27 @@ struct Medicine_Date_AlerterTests {
         let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
         let firstStore = MedicineStore(notificationScheduler: SpyNotificationScheduler(), storageURL: storageURL)
 
-        try await firstStore.save(name: "dolo 650", manufacturingDate: manufacturing, expiryDate: expiry, snoozeMinutes: 1440)
+        try await firstStore.save(name: "dolo 650", manufacturingDate: manufacturing, expiryDate: expiry, reminderLeadDays: 7)
 
         let secondStore = MedicineStore(notificationScheduler: SpyNotificationScheduler(), storageURL: storageURL)
         #expect(secondStore.medicines.map(\.name) == ["Dolo 650"])
-        #expect(secondStore.medicines.first?.snoozeMinutes == 1440)
+        #expect(secondStore.medicines.first?.reminderLeadDays == 7)
 
         try? FileManager.default.removeItem(at: storageURL.deletingLastPathComponent())
     }
 
-    /// Verifies editing snooze updates the saved medicine and refreshes its reminder.
-    @Test @MainActor func storeUpdatesSnoozeAndReschedulesReminder() async throws {
+    /// Verifies editing the reminder lead updates the saved medicine and refreshes its reminder.
+    @Test @MainActor func storeUpdatesReminderLeadAndReschedulesReminder() async throws {
         let scheduler = SpyNotificationScheduler()
         let store = MedicineStore(notificationScheduler: scheduler)
         let manufacturing = try #require(makeDate(year: 2026, month: 5, day: 1))
         let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
 
-        try await store.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry, snoozeMinutes: 1440)
+        try await store.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry)
         let medicine = try #require(store.medicines.first)
-        try await store.update(medicineID: medicine.id, changes: MedicineUpdate(snoozeMinutes: 10080))
+        try await store.update(medicineID: medicine.id, changes: MedicineUpdate(reminderLeadDays: 30))
 
-        #expect(store.medicines.first?.snoozeMinutes == 10080)
+        #expect(store.medicines.first?.reminderLeadDays == 30)
         #expect(scheduler.scheduledMedicineNames == ["Cetirizine", "Cetirizine"])
     }
 
@@ -167,12 +203,65 @@ struct Medicine_Date_AlerterTests {
         let manufacturing = try #require(makeDate(year: 2026, month: 5, day: 1))
         let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
 
-        try await store.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry, snoozeMinutes: 1440)
+        try await store.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry)
         let medicine = try #require(store.medicines.first)
         try await store.delete(medicine)
 
         #expect(store.medicines.isEmpty)
         #expect(scheduler.cancelledMedicineIDs == [medicine.id])
+    }
+
+    /// Verifies an exported backup can be imported by another store, replacing its
+    /// contents, cancelling old reminders, and scheduling new ones.
+    @Test @MainActor func storeExportsAndImportsBackup() async throws {
+        let manufacturing = try #require(makeDate(year: 2026, month: 5, day: 1))
+        let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
+
+        let sourceStore = MedicineStore(notificationScheduler: SpyNotificationScheduler())
+        try await sourceStore.save(name: "Cetirizine", manufacturingDate: manufacturing, expiryDate: expiry)
+        let backup = try sourceStore.exportData()
+
+        let scheduler = SpyNotificationScheduler()
+        let destinationStore = MedicineStore(notificationScheduler: scheduler)
+        try await destinationStore.save(name: "Old Med", manufacturingDate: manufacturing, expiryDate: expiry)
+        let oldID = try #require(destinationStore.medicines.first?.id)
+
+        try await destinationStore.importData(backup)
+
+        #expect(destinationStore.medicines.map(\.name) == ["Cetirizine"])
+        #expect(scheduler.cancelledMedicineIDs == [oldID])
+        #expect(scheduler.scheduledMedicineNames == ["Old Med", "Cetirizine"])
+    }
+
+    /// Verifies the reminder respects the configured lead time before expiry.
+    @Test func reminderDateHonorsConfiguredLeadDays() throws {
+        let manufacturing = try #require(makeDate(year: 2026, month: 5, day: 1))
+        let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
+        let medicine = Medicine(
+            name: "Insulin",
+            manufacturingDate: manufacturing,
+            expiryDate: expiry,
+            reminderLeadDays: 30
+        )
+
+        #expect(medicine.reminderDate == Calendar.current.date(byAdding: .day, value: -30, to: expiry))
+    }
+
+    /// Verifies data saved before version 1.2 (no reminderLeadDays field) still decodes,
+    /// falling back to the original one-day lead. This protects old backups and upgrades.
+    @Test func legacyBackupWithoutLeadDaysDecodesWithOneDayDefault() throws {
+        let json = """
+        [{"id":"11111111-2222-3333-4444-555555555555","name":"Dolo 650",\
+        "manufacturingDate":"2026-05-01T09:00:00Z","expiryDate":"2027-05-01T09:00:00Z",\
+        "snoozeMinutes":1440,"createdAt":"2026-05-01T09:00:00Z"}]
+        """
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        let medicines = try decoder.decode([Medicine].self, from: Data(json.utf8))
+
+        #expect(medicines.first?.name == "Dolo 650")
+        #expect(medicines.first?.reminderLeadDays == 1)
     }
 }
 

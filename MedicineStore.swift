@@ -1,5 +1,7 @@
+import CoreTransferable
 import Foundation
 import Observation
+import UniformTypeIdentifiers
 
 /// Storage for medicines shown by the app.
 ///
@@ -59,7 +61,12 @@ final class MedicineStore {
     ///
     /// `async throws` means this function does asynchronous work and can fail. The caller
     /// must use `await` and `try`, then handle any thrown validation, disk, or notification error.
-    func save(name: String, manufacturingDate: Date, expiryDate: Date, snoozeMinutes: Int) async throws {
+    func save(
+        name: String,
+        manufacturingDate: Date,
+        expiryDate: Date,
+        reminderLeadDays: Int = 1
+    ) async throws {
         try MedicineValidator.validate(
             name: name,
             manufacturingDate: manufacturingDate,
@@ -70,7 +77,7 @@ final class MedicineStore {
             name: name,
             manufacturingDate: manufacturingDate,
             expiryDate: expiryDate,
-            snoozeMinutes: snoozeMinutes
+            reminderLeadDays: reminderLeadDays
         )
 
         try await notificationScheduler.scheduleExpiryReminder(for: medicine)
@@ -81,7 +88,7 @@ final class MedicineStore {
     /// Applies changes to an existing medicine, saves them to disk, and refreshes its reminder.
     ///
     /// The `MedicineUpdate` struct is intentionally broader than the current UI. Right now
-    /// only snooze is editable, but future name/date edits can use the same update path.
+    /// only the reminder lead is editable, but future name/date edits can use the same path.
     func update(medicineID: UUID, changes: MedicineUpdate) async throws {
         guard let index = medicines.firstIndex(where: { $0.id == medicineID }) else { return }
 
@@ -91,7 +98,7 @@ final class MedicineStore {
             name: changes.name ?? current.name,
             manufacturingDate: changes.manufacturingDate ?? current.manufacturingDate,
             expiryDate: changes.expiryDate ?? current.expiryDate,
-            snoozeMinutes: changes.snoozeMinutes ?? current.snoozeMinutes,
+            reminderLeadDays: changes.reminderLeadDays ?? current.reminderLeadDays,
             createdAt: current.createdAt
         )
 
@@ -227,4 +234,29 @@ final class MedicineStore {
         decoder.dateDecodingStrategy = .iso8601
         return decoder
     }()
+}
+
+/// A shareable backup of every saved medicine.
+///
+/// `Transferable` lets SwiftUI's `ShareLink` hand this to the iOS share sheet. The file
+/// is written lazily, only when the user actually picks a share destination, and is a
+/// plain JSON file so it can be AirDropped to another iPhone or kept in Files.
+struct MedicineBackupFile: Transferable {
+    let data: Data
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .json) { backup in
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent(fileName())
+            try backup.data.write(to: url, options: [.atomic])
+            return SentTransferredFile(url)
+        }
+    }
+
+    /// A dated file name such as `MedXpiryTracker-Backup-2026-07-12.json`.
+    ///
+    /// The date helps users tell backups apart when they keep several in Files.
+    static func fileName(for date: Date = .now) -> String {
+        "MedXpiryTracker-Backup-\(date.formatted(.iso8601.year().month().day())).json"
+    }
 }

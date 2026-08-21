@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The main screen of the app.
 ///
@@ -9,7 +10,7 @@ struct ContentView: View {
     @State private var medicineName = ""
     @State private var manufacturingDate: Date?
     @State private var expiryDate: Date?
-    @State private var snoozeMinutes = 1440
+    @State private var reminderLeadDays = 1
     @State private var validationMessage: String?
     @State private var showingScanner = false
     @State private var scannerMode = ScannerMode.name
@@ -17,13 +18,32 @@ struct ContentView: View {
     @State private var manualDateDraft = Date()
     @State private var notificationMedicineID: UUID?
     @State private var medicineEditDraft: MedicineEditDraft?
-
-    private let snoozeOptions = SnoozeOption.allDurationsInMinutes
+    @State private var showingBackupImporter = false
+    @State private var pendingImportData: Data?
+    @State private var backupMessage: String?
 
     /// The medicine selected by tapping an expiry notification, if it still exists in the store.
     private var notificationMedicine: Medicine? {
         guard let notificationMedicineID else { return nil }
         return store.medicines.first { $0.id == notificationMedicineID }
+    }
+
+    /// The current medicines as a shareable backup, or `nil` when there is nothing to export.
+    private var backupShareItem: MedicineBackupFile? {
+        guard !store.medicines.isEmpty, let data = try? store.exportData() else { return nil }
+        return MedicineBackupFile(data: data)
+    }
+
+    /// Shows the replace-confirmation alert while a picked backup waits for approval.
+    private var isConfirmingImport: Binding<Bool> {
+        Binding(
+            get: { pendingImportData != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingImportData = nil
+                }
+            }
+        )
     }
 
     /// Creates the real app screen with the disk-backed medicine store.
@@ -86,9 +106,9 @@ struct ContentView: View {
                         }
                     )
 
-                    Picker("Snooze", selection: $snoozeMinutes) {
-                        ForEach(snoozeOptions, id: \.self) { minutes in
-                            Text(SnoozeOption.label(for: minutes)).tag(minutes)
+                    Picker("Remind before expiry", selection: $reminderLeadDays) {
+                        ForEach(ReminderLeadOption.allDays, id: \.self) { days in
+                            Text(ReminderLeadOption.label(for: days)).tag(days)
                         }
                     }
                 }
@@ -146,6 +166,43 @@ struct ContentView: View {
                     }
                 }
                 .listRowBackground(PillEyePalette.formRowBackground)
+
+                Section {
+                    if let backup = backupShareItem {
+                        ShareLink(
+                            item: backup,
+                            preview: SharePreview(
+                                "MedXpiryTracker medicines backup",
+                                image: Image(systemName: "cross.case.fill")
+                            )
+                        ) {
+                            Label("Export medicines", systemImage: "square.and.arrow.up")
+                        }
+                        .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue))
+                        .accessibilityIdentifier("exportMedicinesButton")
+                    }
+
+                    Button {
+                        backupMessage = nil
+                        showingBackupImporter = true
+                    } label: {
+                        Label("Import from backup", systemImage: "square.and.arrow.down")
+                    }
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary))
+                    .accessibilityIdentifier("importMedicinesButton")
+
+                    if let backupMessage {
+                        Label(backupMessage, systemImage: "info.circle.fill")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(PillEyePalette.deepTeal)
+                            .accessibilityIdentifier("backupMessage")
+                    }
+                } header: {
+                    Text("Backup & transfer")
+                } footer: {
+                    Text("Backups are plain files. AirDrop one to another iPhone or keep it in Files, then import it after switching phones or reinstalling.")
+                }
+                .listRowBackground(PillEyePalette.formRowBackground)
             }
             .fontDesign(.rounded)
             .environment(\.colorScheme, .light)
@@ -178,6 +235,22 @@ struct ContentView: View {
                 } else if let notificationMedicine {
                     medicineDetailsPopup(for: notificationMedicine)
                 }
+            }
+            .fileImporter(
+                isPresented: $showingBackupImporter,
+                allowedContentTypes: [.json]
+            ) { result in
+                handleBackupSelection(result)
+            }
+            .alert("Replace saved medicines?", isPresented: isConfirmingImport) {
+                Button("Replace", role: .destructive) {
+                    if let pendingImportData {
+                        Task { await importBackup(pendingImportData) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Importing replaces your \(store.medicines.count) saved medicine\(store.medicines.count == 1 ? "" : "s") with the contents of the backup file.")
             }
             .task { await store.load() }
             .task { await listenForNotificationTaps() }
@@ -257,7 +330,7 @@ struct ContentView: View {
 
     /// Opens the saved-medicine edit popup.
     ///
-    /// The draft mirrors the full medicine even though only snooze is editable today.
+    /// The draft mirrors the full medicine even though only the reminder lead is editable today.
     /// That keeps this popup ready for future name/date editing without changing the
     /// save pipeline.
     private func openMedicineEditPopup(for medicine: Medicine) {
@@ -348,7 +421,7 @@ struct ContentView: View {
                     detailRow(title: "Manufacturing", value: medicine.manufacturingDate.formatted(date: .abbreviated, time: .omitted))
                     detailRow(title: "Expiry", value: medicine.expiryDate.formatted(date: .abbreviated, time: .omitted))
                     detailRow(title: "Reminder", value: medicine.reminderDate.formatted(date: .abbreviated, time: .shortened))
-                    detailRow(title: "Snooze", value: SnoozeOption.label(for: medicine.snoozeMinutes))
+                    detailRow(title: "Reminder lead", value: ReminderLeadOption.label(for: medicine.reminderLeadDays))
                 }
 
                 HStack(spacing: 12) {
@@ -388,7 +461,7 @@ struct ContentView: View {
 
     /// Center popup for editing saved medicine settings.
     ///
-    /// Name and dates are shown as read-only details. Only snooze can be changed in this
+    /// Name and dates are shown as read-only details. Only the reminder lead can be changed in this
     /// version, then Save writes the update to disk and refreshes the notification.
     private func medicineEditPopup(for draft: MedicineEditDraft) -> some View {
         ZStack {
@@ -410,12 +483,12 @@ struct ContentView: View {
                     detailRow(title: "Expiry", value: draft.expiryDate.formatted(date: .abbreviated, time: .omitted))
                 }
 
-                Picker("Snooze", selection: Binding(
-                    get: { medicineEditDraft?.snoozeMinutes ?? draft.snoozeMinutes },
-                    set: { medicineEditDraft?.snoozeMinutes = $0 }
+                Picker("Remind before expiry", selection: Binding(
+                    get: { medicineEditDraft?.reminderLeadDays ?? draft.reminderLeadDays },
+                    set: { medicineEditDraft?.reminderLeadDays = $0 }
                 )) {
-                    ForEach(snoozeOptions, id: \.self) { minutes in
-                        Text(SnoozeOption.label(for: minutes)).tag(minutes)
+                    ForEach(ReminderLeadOption.allDays, id: \.self) { days in
+                        Text(ReminderLeadOption.label(for: days)).tag(days)
                     }
                 }
                 .pickerStyle(.menu)
@@ -451,7 +524,7 @@ struct ContentView: View {
         }
     }
 
-    /// Saves the edited snooze duration for an existing medicine.
+    /// Saves the edited reminder lead time for an existing medicine.
     private func saveMedicineEdit() {
         guard let medicineEditDraft else { return }
 
@@ -459,7 +532,7 @@ struct ContentView: View {
             do {
                 try await store.update(
                     medicineID: medicineEditDraft.id,
-                    changes: MedicineUpdate(snoozeMinutes: medicineEditDraft.snoozeMinutes)
+                    changes: MedicineUpdate(reminderLeadDays: medicineEditDraft.reminderLeadDays)
                 )
                 self.medicineEditDraft = nil
                 validationMessage = nil
@@ -480,6 +553,50 @@ struct ContentView: View {
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(PillEyePalette.blue)
                 .multilineTextAlignment(.trailing)
+        }
+    }
+
+    /// Handles the backup file picked in the Files browser.
+    ///
+    /// When medicines already exist, the import waits for the user to confirm replacing
+    /// them. Importing into an empty list proceeds immediately.
+    private func handleBackupSelection(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            do {
+                let data = try readBackupFile(at: url)
+                if store.medicines.isEmpty {
+                    Task { await importBackup(data) }
+                } else {
+                    pendingImportData = data
+                }
+            } catch {
+                backupMessage = "Could not read that file. Choose a MedXpiryTracker backup."
+            }
+        case .failure:
+            backupMessage = "Could not open the selected file."
+        }
+    }
+
+    /// Reads a picked file, which may live outside the app sandbox (iCloud Drive, AirDrop inbox, ...).
+    private func readBackupFile(at url: URL) throws -> Data {
+        let hasScopedAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if hasScopedAccess {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+        return try Data(contentsOf: url)
+    }
+
+    /// Replaces the saved medicines with the backup contents and reschedules reminders.
+    private func importBackup(_ data: Data) async {
+        do {
+            try await store.importData(data)
+            let count = store.medicines.count
+            backupMessage = "Imported \(count) medicine\(count == 1 ? "" : "s")."
+        } catch {
+            backupMessage = "Import failed. That file is not a valid MedXpiryTracker backup."
         }
     }
 
@@ -550,7 +667,7 @@ struct ContentView: View {
                 name: medicineName,
                 manufacturingDate: manufacturingDate,
                 expiryDate: expiryDate,
-                snoozeMinutes: snoozeMinutes
+                reminderLeadDays: reminderLeadDays
             )
             resetForm()
         } catch {
@@ -640,7 +757,7 @@ private struct MedicineRow: View {
             Text("Exp: \(medicine.expiryDate.formatted(date: .abbreviated, time: .omitted))")
                 .font(.subheadline)
                 .foregroundStyle(PillEyePalette.blue)
-            Text("Reminder: \(medicine.reminderDate.formatted(date: .abbreviated, time: .shortened)) - Snooze: \(SnoozeOption.label(for: medicine.snoozeMinutes))")
+            Text("Reminder: \(medicine.reminderDate.formatted(date: .abbreviated, time: .shortened)) (\(ReminderLeadOption.label(for: medicine.reminderLeadDays)) before expiry)")
                 .font(.caption.weight(.medium))
                 .foregroundStyle(PillEyePalette.deepTeal)
         }
@@ -756,14 +873,14 @@ private struct MedicineEditDraft: Identifiable {
     var name: String
     var manufacturingDate: Date
     var expiryDate: Date
-    var snoozeMinutes: Int
+    var reminderLeadDays: Int
 
     init(medicine: Medicine) {
         id = medicine.id
         name = medicine.name
         manufacturingDate = medicine.manufacturingDate
         expiryDate = medicine.expiryDate
-        snoozeMinutes = medicine.snoozeMinutes
+        reminderLeadDays = medicine.reminderLeadDays
     }
 }
 

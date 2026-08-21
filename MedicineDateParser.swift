@@ -9,7 +9,11 @@ struct MedicineDateParser {
     ///
     /// The `#"..."#` syntax is a Swift raw string. It avoids needing to double-escape
     /// many regex backslashes, which is similar to Python raw strings like `r"..."`.
-    private static let numericPattern = #"\b(\d{1,2})[./\-](\d{2}|\d{4})\b|\b(\d{1,2})[./\-](\d{1,2})[./\-](\d{2}|\d{4})\b"#
+    ///
+    /// The day/month/year alternative must come first: regex alternation is ordered,
+    /// so with month/year first, `01/05/2026` would match as just `01/05` and the full
+    /// date could never be recognized.
+    private static let numericPattern = #"\b(\d{1,2})[./\-](\d{1,2})[./\-](\d{2}|\d{4})\b|\b(\d{1,2})[./\-](\d{2}|\d{4})\b"#
 
     /// Regular expression for month-name dates like `DEC-2026`, `NOV.2026`, or `JAN 26`.
     private static let monthNamePattern = #"\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|SEPT|OCT|NOV|DEC)[\s./\-]+(\d{2}|\d{4})\b"#
@@ -31,9 +35,25 @@ struct MedicineDateParser {
     ]
 
     /// Replaces OCR-common misreads (letter O → digit 0) before pattern matching.
+    ///
+    /// Only an O next to a digit is replaced (for example `2O26` → `2026`). Replacing
+    /// every O would corrupt month names such as `NOV` and `OCT` before they can match.
+    /// The loop handles runs like `2OO6`, where each pass exposes the next misread O.
     private static func normalizedForOCR(_ text: String) -> String {
-        text.replacingOccurrences(of: "O", with: "0")
+        guard let regex = ocrMisreadZeroRegex else { return text }
+
+        var normalized = text
+        while true {
+            let range = NSRange(normalized.startIndex..<normalized.endIndex, in: normalized)
+            let replaced = regex.stringByReplacingMatches(in: normalized, range: range, withTemplate: "0")
+            if replaced == normalized {
+                return normalized
+            }
+            normalized = replaced
+        }
     }
+
+    private static let ocrMisreadZeroRegex = try? NSRegularExpression(pattern: #"(?<=\d)O|O(?=\d)"#)
 
     /// Finds every date-looking string inside a block of OCR text.
     ///

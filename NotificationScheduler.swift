@@ -20,6 +20,12 @@ struct LocalNotificationScheduler: NotificationScheduling {
     static let snoozeActionIdentifier = "SNOOZE_MEDICINE_REMINDER"
     static let cancelActionIdentifier = "CANCEL_MEDICINE_REMINDER"
 
+    /// How long the notification's Snooze button defers the reminder (one day).
+    ///
+    /// Snooze is intentionally not configurable per medicine: it is a quick "not now"
+    /// on the lock screen, while `reminderLeadDays` controls the planned first alert.
+    static let snoozeMinutes = 1440
+
     private let center: UNUserNotificationCenter
 
     /// Creates a scheduler using the system notification center.
@@ -39,12 +45,13 @@ struct LocalNotificationScheduler: NotificationScheduling {
 
         let content = UNMutableNotificationContent()
         content.title = "Expiry reminder"
-        content.body = "One saved item expires tomorrow."
+        content.body = medicine.reminderLeadDays == 1
+            ? "One saved item expires tomorrow."
+            : "One saved item expires in \(ReminderLeadOption.label(for: medicine.reminderLeadDays).lowercased())."
         AlarmNotificationSound.applyUrgency(to: content)
         content.categoryIdentifier = Self.categoryIdentifier
         content.userInfo = [
-            "medicineID": medicine.id.uuidString,
-            "snoozeMinutes": medicine.snoozeMinutes
+            "medicineID": medicine.id.uuidString
         ]
 
         let triggerDate = max(medicine.reminderDate, Date().addingTimeInterval(60))
