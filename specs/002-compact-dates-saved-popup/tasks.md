@@ -31,6 +31,14 @@
 - [x] T012 `MedicineFilter.includes` accepts an injectable `now`; the popup evaluates the whole
   list against one instant. Legacy SF Symbol `largecircle.fill.circle` → `circle.inset.filled`.
 
+## Phase 5: Date-entry refinements (2026-08-26, FR-001/FR-002a/FR-002b)
+- [x] T013 Remove the "Not set" value line; empty dates show as red dashes in the Mfg/Exp chips.
+- [x] T014 Add Clear buttons: `clearDatesButton` beside Set (empties both dates, resets the
+  dropdown to Manufacturing) and `clearMedicineNameButton` beside Scan medicine name. Both
+  disabled when empty.
+- [x] T015 Auto-advance the dropdown to the other date field after each manual or scanned capture
+  (`ManualDateTarget.other`).
+
 ## Notes
 - Constitution compliance: SwiftUI + async/await only; design system reused; light mode + portrait;
   stable accessibility identifiers added. No persistence/model changes.

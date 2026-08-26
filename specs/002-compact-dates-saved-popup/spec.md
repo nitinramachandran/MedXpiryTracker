@@ -37,7 +37,14 @@ button opens a popup where the user filters by All / Expiring / Expired.
 ### Functional Requirements
 - **FR-001**: The add form MUST capture manufacturing and expiry dates from a single row using a
   dropdown to select the active field; both captured dates MUST remain visible simultaneously.
+  No separate "Not set" value line is shown — an empty date appears as a red dash in the
+  Mfg/Exp summary instead.
 - **FR-002**: Set-manually and Scan actions MUST apply to the field currently selected in the dropdown.
+- **FR-002a**: After a date is captured (manually or by scan), the dropdown MUST automatically
+  advance to the other date field, so entering both dates needs no manual re-selection.
+- **FR-002b**: A Clear button beside Set MUST empty both captured dates; a Clear button beside
+  "Scan medicine name" MUST empty the name field. Each Clear is disabled when there is nothing
+  to clear.
 - **FR-003**: The main screen MUST replace the inline saved-medicines list with a "Saved Medicines"
   button that opens a popup.
 - **FR-004**: The popup MUST offer three mutually exclusive filters — All, Expiring, Expired —

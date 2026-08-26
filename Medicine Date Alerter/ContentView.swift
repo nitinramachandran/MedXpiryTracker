@@ -80,13 +80,22 @@ struct ContentView: View {
                         .foregroundStyle(PillEyePalette.deepTeal)
                         .accessibilityIdentifier("medicineNameField")
 
-                    Button {
-                        scannerMode = .name
-                        showingScanner = true
-                    } label: {
-                        Label("Scan medicine name", systemImage: "camera.viewfinder")
+                    HStack {
+                        Button {
+                            scannerMode = .name
+                            showingScanner = true
+                        } label: {
+                            Label("Scan medicine name", systemImage: "camera.viewfinder")
+                        }
+                        .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal))
+
+                        Button("Clear") {
+                            medicineName = ""
+                        }
+                        .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, prominence: .secondary))
+                        .disabled(medicineName.isEmpty)
+                        .accessibilityIdentifier("clearMedicineNameButton")
                     }
-                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal))
 
                     dateEntryRow
 
@@ -579,6 +588,9 @@ struct ContentView: View {
     }
 
     /// Saves the manually selected date into the correct field.
+    ///
+    /// The dropdown then advances to the other date field, so entering both dates
+    /// does not require changing the selection by hand.
     private func saveManualDate(for target: ManualDateTarget) {
         switch target {
         case .manufacturing:
@@ -587,6 +599,7 @@ struct ContentView: View {
             expiryDate = manualDateDraft
         }
         revalidateDateOrder()
+        activeDateField = target.other
         manualDateTarget = nil
     }
 
@@ -625,24 +638,33 @@ struct ContentView: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(PillEyePalette.deepTeal)
                 Spacer()
-                Picker("Date to set", selection: $activeDateField) {
+                // An explicitly empty label: inside a Form row, a menu picker still renders
+                // its title text even with .labelsHidden(). VoiceOver still gets a name
+                // through the accessibility label below.
+                Picker(selection: $activeDateField) {
                     Text("Manufacturing").tag(ManualDateTarget.manufacturing)
                     Text("Expiry").tag(ManualDateTarget.expiry)
+                } label: {
+                    EmptyView()
                 }
                 .pickerStyle(.menu)
+                .accessibilityLabel("Date to set")
                 .tint(PillEyePalette.teal)
                 .accessibilityIdentifier("dateFieldPicker")
             }
 
             HStack {
-                Text(activeDateValue?.formatted(date: .abbreviated, time: .omitted) ?? "Not set")
-                    .fontWeight(activeDateValue == nil ? .regular : .semibold)
-                    .foregroundStyle(activeDateValue == nil ? PillEyePalette.blue.opacity(0.72) : PillEyePalette.deepTeal)
-                Spacer()
                 Button(activeDateValue == nil ? "Set" : "Change") {
                     openManualDatePopup(for: activeDateField)
                 }
                 .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 38))
+
+                Button("Clear") {
+                    clearDates()
+                }
+                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, prominence: .secondary, minHeight: 38))
+                .disabled(manufacturingDate == nil && expiryDate == nil)
+                .accessibilityIdentifier("clearDatesButton")
 
                 Button {
                     scannerMode = activeDateField == .manufacturing ? .manufacturingDate : .expiryDate
@@ -661,15 +683,25 @@ struct ContentView: View {
     }
 
     /// A compact "Mfg: … / Exp: …" chip keeping both captured dates visible.
+    ///
+    /// An empty date shows a red dash so a missing value stands out at a glance.
     private func dateSummaryChip(title: String, date: Date?) -> some View {
         HStack(spacing: 4) {
             Text("\(title):")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(PillEyePalette.deepTeal)
             Text(date?.formatted(date: .abbreviated, time: .omitted) ?? "—")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(date == nil ? PillEyePalette.blue.opacity(0.6) : PillEyePalette.blue)
+                .font(.caption.weight(date == nil ? .bold : .medium))
+                .foregroundStyle(date == nil ? PillEyePalette.coral : PillEyePalette.blue)
         }
+    }
+
+    /// Clears both captured dates so the user can start the date entry over.
+    private func clearDates() {
+        manufacturingDate = nil
+        expiryDate = nil
+        activeDateField = .manufacturing
+        revalidateDateOrder()
     }
 
     /// Validates and saves the current form values.
@@ -735,6 +767,7 @@ struct ContentView: View {
 
         manufacturingDate = date
         revalidateDateOrder()
+        activeDateField = .expiry
     }
 
     /// Parses and applies a scanned expiry date.
@@ -746,6 +779,7 @@ struct ContentView: View {
 
         expiryDate = date
         revalidateDateOrder()
+        activeDateField = .manufacturing
     }
 
 }
@@ -792,6 +826,11 @@ private enum ManualDateTarget: Hashable, Identifiable {
     case expiry
 
     var id: Self { self }
+
+    /// The opposite date field, used to advance the dropdown after one date is captured.
+    var other: ManualDateTarget {
+        self == .manufacturing ? .expiry : .manufacturing
+    }
 
     var title: String {
         switch self {
