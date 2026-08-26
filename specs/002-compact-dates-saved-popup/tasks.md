@@ -1,0 +1,30 @@
+# Tasks: Compact Date Entry & Saved-Medicines Popup
+
+**Input**: `specs/002-compact-dates-saved-popup/spec.md`
+**Status**: Implemented
+
+## Phase 1: Compact date entry (main author)
+- [x] T001 Add `activeDateField` state and replace the two date rows with a single `dateEntryRow`
+  (menu dropdown to pick Manufacturing/Expiry) in `Medicine Date Alerter/ContentView.swift`.
+- [x] T002 Add `activeDateValue` and `dateSummaryChip` so both captured dates stay visible; Set/Scan
+  act on the selected field. Identifier `dateFieldPicker`.
+- [x] T003 Verify no diagnostics via XcodeRefreshCodeIssuesInFile.
+
+## Phase 2: Saved-medicines popup (delegated agent)
+- [x] T004 Add a "Saved medicines" button (`savedMedicinesButton`) and remove the inline saved list
+  in `ContentView.swift`; present `SavedMedicinesView` as a sheet.
+- [x] T005 Create `SavedMedicinesView.swift`: `MedicineFilter` (all/expiring/expired) with
+  `includes(_:)` over `Medicine.isExpired`; default Expiring.
+- [x] T006 Three radio-style filter options colored All = green, Expiring = orange, Expired = red
+  (`filterAll`/`filterExpiring`/`filterExpired`); rows tinted by status (expired red, else orange).
+- [x] T007 Empty-store and empty-filter states via `ContentUnavailableView`.
+- [x] T008 Keep edit (dismiss sheet → existing edit popup) and delete (swipe → `store.delete`).
+- [x] T009 Add `PillEyePalette.filter{Green,Orange,Red}`; register `SavedMedicinesView.swift` in the
+  Xcode target (repo-root files are explicit references, not auto-synced).
+
+## Phase 3: Verify
+- [x] T010 BuildProject succeeds; both edited files report no issues.
+
+## Notes
+- Constitution compliance: SwiftUI + async/await only; design system reused; light mode + portrait;
+  stable accessibility identifiers added. No persistence/model changes.

@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var manufacturingDate: Date?
     @State private var expiryDate: Date?
     @State private var reminderLeadDays = 1
+    @State private var activeDateField: ManualDateTarget = .manufacturing
     @State private var validationMessage: String?
     @State private var showingScanner = false
     @State private var scannerMode = ScannerMode.name
@@ -18,6 +19,7 @@ struct ContentView: View {
     @State private var manualDateDraft = Date()
     @State private var notificationMedicineID: UUID?
     @State private var medicineEditDraft: MedicineEditDraft?
+    @State private var showingSavedMedicines = false
     @State private var showingBackupImporter = false
     @State private var pendingImportData: Data?
     @State private var backupMessage: String?
@@ -86,25 +88,7 @@ struct ContentView: View {
                     }
                     .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal))
 
-                    dateInputRow(
-                        title: "Manufacturing date",
-                        date: manufacturingDate,
-                        setAction: { openManualDatePopup(for: .manufacturing) },
-                        scanAction: {
-                            scannerMode = .manufacturingDate
-                            showingScanner = true
-                        }
-                    )
-
-                    dateInputRow(
-                        title: "Expiry date",
-                        date: expiryDate,
-                        setAction: { openManualDatePopup(for: .expiry) },
-                        scanAction: {
-                            scannerMode = .expiryDate
-                            showingScanner = true
-                        }
-                    )
+                    dateEntryRow
 
                     Picker("Remind before expiry", selection: $reminderLeadDays) {
                         ForEach(ReminderLeadOption.allDays, id: \.self) { days in
@@ -136,34 +120,15 @@ struct ContentView: View {
                 }
                 .listRowBackground(PillEyePalette.formRowBackground)
 
-                Section("Saved medicines") {
-                    if store.medicines.isEmpty {
-                        ContentUnavailableView(
-                            "No medicines saved",
-                            systemImage: "pills",
-                            description: Text("Add medicine details to schedule an expiry reminder.")
-                        )
-                    } else {
-                        ForEach(store.medicines) { medicine in
-                            MedicineRow(medicine: medicine)
-                                .swipeActions {
-                                    Button(role: .destructive) {
-                                        Task {
-                                            await deleteMedicine(medicine)
-                                        }
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-
-                                    Button {
-                                        openMedicineEditPopup(for: medicine)
-                                    } label: {
-                                        Label("Edit", systemImage: "pencil")
-                                    }
-                                    .tint(PillEyePalette.blue)
-                                }
-                        }
+                Section {
+                    Button {
+                        showingSavedMedicines = true
+                    } label: {
+                        Label("Saved medicines", systemImage: "list.bullet.rectangle.portrait.fill")
+                            .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal, minHeight: 46))
+                    .accessibilityIdentifier("savedMedicinesButton")
                 }
                 .listRowBackground(PillEyePalette.formRowBackground)
 
@@ -226,6 +191,19 @@ struct ContentView: View {
                     .tint(PillEyePalette.teal)
                     .navigationTitle(scannerMode.title)
                 }
+            }
+            .sheet(isPresented: $showingSavedMedicines) {
+                SavedMedicinesView(
+                    store: store,
+                    onEdit: { medicine in
+                        showingSavedMedicines = false
+                        openMedicineEditPopup(for: medicine)
+                    },
+                    onDelete: { medicine in
+                        await deleteMedicine(medicine)
+                    },
+                    onClose: { showingSavedMedicines = false }
+                )
             }
             .overlay {
                 if let manualDateTarget {
@@ -621,28 +599,72 @@ struct ContentView: View {
         manualDateTarget = nil
     }
 
-    /// Shows an empty date state with Set/Scan actions, or a formatted date once selected.
-    private func dateInputRow(title: String, date: Date?, setAction: @escaping () -> Void, scanAction: @escaping () -> Void) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    /// The date currently targeted by the dropdown (manufacturing or expiry).
+    private var activeDateValue: Date? {
+        switch activeDateField {
+        case .manufacturing:
+            return manufacturingDate
+        case .expiry:
+            return expiryDate
+        }
+    }
+
+    /// A single compact row that captures whichever date the dropdown selects.
+    ///
+    /// This replaces the previous two full-height rows to save vertical space. A menu
+    /// picker chooses the field being set, Set/Scan act on that field, and a summary line
+    /// keeps both captured dates visible at once so nothing is hidden by the collapse.
+    private var dateEntryRow: some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(title)
+                Text("Date")
                     .fontWeight(.semibold)
                     .foregroundStyle(PillEyePalette.deepTeal)
                 Spacer()
-                Text(date?.formatted(date: .abbreviated, time: .omitted) ?? "Not set")
-                    .fontWeight(date == nil ? .regular : .semibold)
-                    .foregroundStyle(date == nil ? PillEyePalette.blue.opacity(0.72) : PillEyePalette.deepTeal)
+                Picker("Date to set", selection: $activeDateField) {
+                    Text("Manufacturing").tag(ManualDateTarget.manufacturing)
+                    Text("Expiry").tag(ManualDateTarget.expiry)
+                }
+                .pickerStyle(.menu)
+                .tint(PillEyePalette.teal)
+                .accessibilityIdentifier("dateFieldPicker")
             }
 
             HStack {
-                Button(date == nil ? "Set manually" : "Change manually", action: setAction)
-                    .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 38))
+                Text(activeDateValue?.formatted(date: .abbreviated, time: .omitted) ?? "Not set")
+                    .fontWeight(activeDateValue == nil ? .regular : .semibold)
+                    .foregroundStyle(activeDateValue == nil ? PillEyePalette.blue.opacity(0.72) : PillEyePalette.deepTeal)
+                Spacer()
+                Button(activeDateValue == nil ? "Set" : "Change") {
+                    openManualDatePopup(for: activeDateField)
+                }
+                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 38))
 
-                Button(action: scanAction) {
+                Button {
+                    scannerMode = activeDateField == .manufacturing ? .manufacturingDate : .expiryDate
+                    showingScanner = true
+                } label: {
                     Label("Scan", systemImage: "text.viewfinder")
                 }
                 .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal, prominence: .secondary, minHeight: 38))
             }
+
+            HStack(spacing: 14) {
+                dateSummaryChip(title: "Mfg", date: manufacturingDate)
+                dateSummaryChip(title: "Exp", date: expiryDate)
+            }
+        }
+    }
+
+    /// A compact "Mfg: … / Exp: …" chip keeping both captured dates visible.
+    private func dateSummaryChip(title: String, date: Date?) -> some View {
+        HStack(spacing: 4) {
+            Text("\(title):")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(PillEyePalette.deepTeal)
+            Text(date?.formatted(date: .abbreviated, time: .omitted) ?? "—")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(date == nil ? PillEyePalette.blue.opacity(0.6) : PillEyePalette.blue)
         }
     }
 
@@ -732,40 +754,6 @@ struct ContentView: View {
 
 }
 
-/// One row in the saved medicines list.
-private struct MedicineRow: View {
-    let medicine: Medicine
-
-    /// Shows the medicine name, dates, reminder time, and expired status.
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(medicine.name)
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(PillEyePalette.deepTeal)
-                Spacer()
-                if medicine.isExpired {
-                    Text("Expired")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(PillEyePalette.coral)
-                }
-            }
-
-            Text("Mfg: \(medicine.manufacturingDate.formatted(date: .abbreviated, time: .omitted))")
-                .font(.subheadline)
-                .foregroundStyle(PillEyePalette.blue)
-            Text("Exp: \(medicine.expiryDate.formatted(date: .abbreviated, time: .omitted))")
-                .font(.subheadline)
-                .foregroundStyle(PillEyePalette.blue)
-            Text("Reminder: \(medicine.reminderDate.formatted(date: .abbreviated, time: .shortened)) (\(ReminderLeadOption.label(for: medicine.reminderLeadDays)) before expiry)")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(PillEyePalette.deepTeal)
-        }
-        .padding(.vertical, 6)
-    }
-
-}
-
 /// Light, friendly colors used by the PillEye interface.
 ///
 /// Grouping colors here keeps styling consistent and easier to change later.
@@ -794,6 +782,12 @@ enum PillEyePalette {
     static let coral = Color(red: 0.96, green: 0.36, blue: 0.33)
     static let blue = Color(red: 0.25, green: 0.50, blue: 0.92)
     static let ink = Color(red: 0.12, green: 0.18, blue: 0.24)
+
+    // Status colors for the saved-medicines filter: All = green, Expiring = orange,
+    // Expired = red. Red reads as an alert color consistent with `coral` warnings.
+    static let filterGreen = Color.green
+    static let filterOrange = Color.orange
+    static let filterRed = Color.red
 }
 
 /// Identifies which date field is being edited in the manual date popup.

@@ -62,6 +62,21 @@ struct Medicine: Identifiable, Codable, Hashable {
     var isExpired: Bool {
         expiryDate < Date()
     }
+
+    /// How soon (in days) before expiry a medicine counts as "expiring soon".
+    static let expiringSoonWindowDays = 60
+
+    /// Returns `true` when the medicine has not expired yet but expires within the next
+    /// `expiringSoonWindowDays` days. Already-expired medicines are excluded.
+    ///
+    /// The optional `now` and `calendar` parameters keep this testable with fixed inputs.
+    func isExpiringSoon(now: Date = Date(), calendar: Calendar = .current) -> Bool {
+        guard expiryDate >= now else { return false }
+        guard let threshold = calendar.date(byAdding: .day, value: Self.expiringSoonWindowDays, to: now) else {
+            return false
+        }
+        return expiryDate <= threshold
+    }
 }
 
 /// Describes editable changes to an existing medicine.
