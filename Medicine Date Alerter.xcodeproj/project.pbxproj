@@ -18,6 +18,7 @@
 		158402792FC390A500221BBC /* MedicineNotificationRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402782FC390A500221BBC /* MedicineNotificationRoute.swift */; };
 		1584027B2FC407B400221BBC /* ReminderLeadOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1584027A2FC407B400221BBC /* ReminderLeadOption.swift */; };
 		158402892FC47D5000221BBC /* MedicineNameParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158402882FC47D5000221BBC /* MedicineNameParser.swift */; };
+		AA0000012FD1000000000001 /* SavedMedicinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000022FD1000000000002 /* SavedMedicinesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		158402782FC390A500221BBC /* MedicineNotificationRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineNotificationRoute.swift; sourceTree = "<group>"; };
 		1584027A2FC407B400221BBC /* ReminderLeadOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderLeadOption.swift; sourceTree = "<group>"; };
 		158402882FC47D5000221BBC /* MedicineNameParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicineNameParser.swift; sourceTree = "<group>"; };
+		AA0000022FD1000000000002 /* SavedMedicinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedMedicinesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -117,6 +119,7 @@
 				1584027A2FC407B400221BBC /* ReminderLeadOption.swift */,
 				158402882FC47D5000221BBC /* MedicineNameParser.swift */,
 				154CF4922FD19AB400C039FD /* DimensionalButtonStyle.swift */,
+				AA0000022FD1000000000002 /* SavedMedicinesView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -285,6 +288,7 @@
 				1517138A2FBCAC39000CEFA5 /* Medicine.swift in Sources */,
 				1517138E2FBCAC3A000CEFA5 /* MedicineStore.swift in Sources */,
 				151713902FBCAC3B000CEFA5 /* NotificationScheduler.swift in Sources */,
+				AA0000012FD1000000000001 /* SavedMedicinesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
