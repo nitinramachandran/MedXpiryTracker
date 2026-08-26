@@ -4,7 +4,7 @@ import Foundation
 ///
 /// OCR means text recognized from the camera image. This parser intentionally stays
 /// simple and testable: it takes a normal `String` and returns Swift `Date` values.
-struct MedicineDateParser {
+nonisolated struct MedicineDateParser {
     /// Regular expression for dates like `05/2026`, `05-2026`, `01/05/2026`, or `01-05-26`.
     ///
     /// The `#"..."#` syntax is a Swift raw string. It avoids needing to double-escape

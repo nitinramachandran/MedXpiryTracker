@@ -5,7 +5,7 @@ import Foundation
 /// This is similar to a Java/TypeScript model class or a Python dataclass.
 /// `Identifiable` lets SwiftUI use this object in lists, `Codable` lets us convert it
 /// to and from JSON, and `Hashable` lets Swift compare/store it efficiently.
-struct Medicine: Identifiable, Codable, Hashable {
+nonisolated struct Medicine: Identifiable, Codable, Hashable {
     let id: UUID
     var name: String
     var manufacturingDate: Date
@@ -83,7 +83,7 @@ struct Medicine: Identifiable, Codable, Hashable {
 ///
 /// Today the UI only changes `reminderLeadDays`, but this struct already has fields for
 /// name and dates so future edit screens can reuse the same store update function.
-struct MedicineUpdate {
+nonisolated struct MedicineUpdate {
     var name: String?
     var manufacturingDate: Date?
     var expiryDate: Date?
@@ -94,7 +94,7 @@ struct MedicineUpdate {
 ///
 /// `LocalizedError` lets each error provide a user-readable message through
 /// `localizedDescription`, similar to storing an error message in an exception.
-enum MedicineValidationError: Error, Equatable, LocalizedError {
+nonisolated enum MedicineValidationError: Error, Equatable, LocalizedError {
     case missingName
     case expiryNotAfterManufacturing
 
@@ -113,7 +113,7 @@ enum MedicineValidationError: Error, Equatable, LocalizedError {
 ///
 /// This is an `enum` with only static functions, which is a common Swift way to
 /// group utility functions without allowing anyone to create an instance.
-enum MedicineValidator {
+nonisolated enum MedicineValidator {
     /// Checks that the form values are valid before saving.
     ///
     /// `throws` means this function can fail by throwing an error, similar to Java

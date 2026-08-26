@@ -1,7 +1,14 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (none) → 1.0.0
+Version change: 1.0.0 → 1.0.1 (PATCH — clarification, no new obligations)
+Rationale: Documented the actor-isolation convention that Principles II and III already
+imply. The target builds with SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor, so pure logic
+types (parsers, validators, models, palettes) are marked `nonisolated` at the type level
+to stay callable and unit-testable from any context. Clarified in Principle III.
+Templates requiring updates: none (plan/spec/tasks templates unaffected).
+
+Previous version change: (none) → 1.0.0
 Rationale: Initial ratification of the project constitution, retro-fitting
 Spec-Driven Development onto the existing MedXpiryTracker (PillEye) codebase.
 
@@ -71,6 +78,10 @@ The UI is SwiftUI and state flows through native mechanisms. Asynchronous work u
   wrappers (`@State`, bindings). Store types are `@MainActor`.
 - The main actor MUST NOT be blocked on launch: disk loads run off-main (e.g.
   `Task.detached`) with only the result assigned back on the main actor.
+- The app target builds with default MainActor isolation
+  (`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`). Pure logic types with no UI or mutable
+  shared state (parsers, validators, value models, constant palettes) MUST be declared
+  `nonisolated` at the type level so they remain callable and testable from any context.
 - New Apple APIs are verified against current documentation before use rather than assumed.
 
 *Rationale: A single, modern concurrency and UI model keeps the codebase small, consistent,
@@ -157,4 +168,4 @@ Gates:
 - **Compliance**: reviewers verify each PR against the relevant principles. The
   `/speckit.analyze` step is the automated consistency check before implementation.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-21 | **Last Amended**: 2026-08-21
+**Version**: 1.0.1 | **Ratified**: 2026-08-21 | **Last Amended**: 2026-08-26

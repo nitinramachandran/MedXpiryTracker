@@ -5,7 +5,7 @@ import Foundation
 /// The lead is how long before the expiry date the reminder fires. A strip of tablets
 /// may only need a day's notice, while a large or expensive bottle is worth replacing
 /// weeks early so it can still be used up.
-enum ReminderLeadOption {
+nonisolated enum ReminderLeadOption {
     static let allDays = [1, 7, 14, 30, 60]
 
     /// Converts a stored day count into user-friendly text.

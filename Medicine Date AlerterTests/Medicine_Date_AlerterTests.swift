@@ -247,6 +247,65 @@ struct Medicine_Date_AlerterTests {
         #expect(medicine.reminderDate == Calendar.current.date(byAdding: .day, value: -30, to: expiry))
     }
 
+    /// Verifies the expiring-soon window: not expired yet AND within 60 days of expiry.
+    ///
+    /// Boundaries matter here: a medicine expiring exactly 60 days from `now` still counts,
+    /// one expiring 61 days out does not, and an already-expired medicine never counts.
+    @Test func expiringSoonCoversOnlyTheSixtyDayWindow() throws {
+        let now = try #require(makeDate(year: 2026, month: 8, day: 26))
+        let manufacturing = try #require(makeDate(year: 2025, month: 1, day: 1))
+
+        func medicine(expiringOn expiry: Date) -> Medicine {
+            Medicine(name: "Test", manufacturingDate: manufacturing, expiryDate: expiry)
+        }
+
+        let expired = medicine(expiringOn: try #require(makeDate(year: 2026, month: 8, day: 25)))
+        let withinWindow = medicine(expiringOn: try #require(makeDate(year: 2026, month: 9, day: 30)))
+        let atWindowEdge = medicine(expiringOn: try #require(makeDate(year: 2026, month: 10, day: 25)))
+        let beyondWindow = medicine(expiringOn: try #require(makeDate(year: 2026, month: 10, day: 26)))
+
+        #expect(Medicine.expiringSoonWindowDays == 60)
+        #expect(!expired.isExpiringSoon(now: now))
+        #expect(withinWindow.isExpiringSoon(now: now))
+        #expect(atWindowEdge.isExpiringSoon(now: now))
+        #expect(!beyondWindow.isExpiringSoon(now: now))
+    }
+
+    /// Verifies the saved-medicines filters categorize by expiry status.
+    ///
+    /// Expired and Expiring are disjoint; medicines expiring beyond the 60-day window
+    /// belong to neither and appear only under All.
+    @Test func medicineFilterCategorizesByExpiryStatus() throws {
+        let now = try #require(makeDate(year: 2026, month: 8, day: 26))
+        let manufacturing = try #require(makeDate(year: 2025, month: 1, day: 1))
+
+        let expired = Medicine(
+            name: "Expired",
+            manufacturingDate: manufacturing,
+            expiryDate: try #require(makeDate(year: 2026, month: 8, day: 1))
+        )
+        let expiringSoon = Medicine(
+            name: "Expiring",
+            manufacturingDate: manufacturing,
+            expiryDate: try #require(makeDate(year: 2026, month: 9, day: 15))
+        )
+        let farOut = Medicine(
+            name: "Far Out",
+            manufacturingDate: manufacturing,
+            expiryDate: try #require(makeDate(year: 2027, month: 8, day: 1))
+        )
+
+        for medicine in [expired, expiringSoon, farOut] {
+            #expect(MedicineFilter.all.includes(medicine, now: now))
+        }
+        #expect(MedicineFilter.expired.includes(expired, now: now))
+        #expect(!MedicineFilter.expired.includes(expiringSoon, now: now))
+        #expect(!MedicineFilter.expired.includes(farOut, now: now))
+        #expect(MedicineFilter.expiring.includes(expiringSoon, now: now))
+        #expect(!MedicineFilter.expiring.includes(expired, now: now))
+        #expect(!MedicineFilter.expiring.includes(farOut, now: now))
+    }
+
     /// Verifies data saved before version 1.2 (no reminderLeadDays field) still decodes,
     /// falling back to the original one-day lead. This protects old backups and upgrades.
     @Test func legacyBackupWithoutLeadDaysDecodesWithOneDayDefault() throws {

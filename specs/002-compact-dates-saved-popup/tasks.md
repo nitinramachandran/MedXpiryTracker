@@ -25,6 +25,12 @@
 ## Phase 3: Verify
 - [x] T010 BuildProject succeeds; both edited files report no issues.
 
+## Phase 4: Post-implementation polish (2026-08-26 cleanup)
+- [x] T011 Unit tests for `Medicine.isExpiringSoon` boundaries (expired / within / at edge /
+  beyond the 60-day window) and `MedicineFilter.includes` — closes this feature's test-first gap.
+- [x] T012 `MedicineFilter.includes` accepts an injectable `now`; the popup evaluates the whole
+  list against one instant. Legacy SF Symbol `largecircle.fill.circle` → `circle.inset.filled`.
+
 ## Notes
 - Constitution compliance: SwiftUI + async/await only; design system reused; light mode + portrait;
   stable accessibility identifiers added. No persistence/model changes.

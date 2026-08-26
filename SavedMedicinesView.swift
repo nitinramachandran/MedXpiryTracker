@@ -6,7 +6,7 @@ import SwiftUI
 /// expire within the next `Medicine.expiringSoonWindowDays` days, and `expired` shows
 /// medicines whose expiry date has already passed. The raw values are used as stable
 /// identifiers in the picker.
-enum MedicineFilter: String, CaseIterable, Identifiable {
+nonisolated enum MedicineFilter: String, CaseIterable, Identifiable {
     case all
     case expiring
     case expired
@@ -50,14 +50,17 @@ enum MedicineFilter: String, CaseIterable, Identifiable {
     }
 
     /// Returns `true` when the given medicine belongs in this filter.
-    func includes(_ medicine: Medicine) -> Bool {
+    ///
+    /// The optional `now` parameter keeps one consistent reference time across a whole
+    /// list evaluation and makes the filter unit-testable with fixed dates.
+    func includes(_ medicine: Medicine, now: Date = Date()) -> Bool {
         switch self {
         case .all:
             return true
         case .expiring:
-            return medicine.isExpiringSoon()
+            return medicine.isExpiringSoon(now: now)
         case .expired:
-            return medicine.isExpired
+            return medicine.expiryDate < now
         }
     }
 }
@@ -78,8 +81,12 @@ struct SavedMedicinesView: View {
     @State private var filter: MedicineFilter = .expiring
 
     /// Medicines matching the currently selected filter.
+    ///
+    /// One `now` is captured per evaluation so every medicine in the list is judged
+    /// against the same instant.
     private var filteredMedicines: [Medicine] {
-        store.medicines.filter { filter.includes($0) }
+        let now = Date()
+        return store.medicines.filter { filter.includes($0, now: now) }
     }
 
     var body: some View {
@@ -119,7 +126,7 @@ struct SavedMedicinesView: View {
                     filter = option
                 } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: filter == option ? "largecircle.fill.circle" : "circle")
+                        Image(systemName: filter == option ? "circle.inset.filled" : "circle")
                         Text(option.label)
                     }
                     .font(.subheadline.weight(.semibold))

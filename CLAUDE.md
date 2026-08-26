@@ -42,11 +42,17 @@ See `specs/001-medicine-expiry-tracker/` for the worked example covering the cur
   (`NotificationScheduling`), test-first.
 - SwiftUI + async/await only — no Combine. Stores are `@MainActor @Observable`; never block the
   main actor on launch.
+- The app target uses `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`. Declare pure logic types
+  (parsers, validators, value models, constant palettes) `nonisolated` at the type level.
 - Codable stays forward-compatible (`decodeIfPresent` defaults; don't remove persisted fields).
 - Reuse `PillEyePalette` and `DimensionalButtonStyle`; keep light mode + portrait; give interactive
   elements stable `accessibilityIdentifier`s.
 
 ## Recent Changes
+- Code cleanup (2026-08-26): `nonisolated` convention for pure types, one shared date-order
+  validation helper in ContentView, modern SF Symbol names, tests for the 60-day expiring window.
+- 002-compact-dates-saved-popup: single-row date entry (Mfg/Expiry dropdown) and a filtered
+  Saved Medicines popup (All/Expiring/Expired; Expiring = within 60 days).
 - 001-medicine-expiry-tracker: retro-specified the shipped app (scan/save/remind, backup, edit lead).
 
 <!-- MANUAL ADDITIONS START -->

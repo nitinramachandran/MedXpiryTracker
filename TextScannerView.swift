@@ -170,7 +170,7 @@ struct TextScannerView: View {
     private var manualTextSelectionArea: some View {
         VStack(alignment: .leading, spacing: 12) {
             if !detectedTexts.isEmpty {
-                    Text("Suggested name")
+                Text("Suggested name")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(ScannerPalette.ink)
 

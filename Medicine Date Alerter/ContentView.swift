@@ -583,20 +583,24 @@ struct ContentView: View {
         switch target {
         case .manufacturing:
             manufacturingDate = manualDateDraft
-            if let expiryDate {
-                validationMessage = manualDateDraft < expiryDate ? nil : "Manufacturing date must be before the expiry date."
-            } else {
-                validationMessage = nil
-            }
         case .expiry:
             expiryDate = manualDateDraft
-            if let manufacturingDate {
-                validationMessage = manualDateDraft > manufacturingDate ? nil : "Expiry date must be after the manufacturing date."
-            } else {
-                validationMessage = nil
-            }
         }
+        revalidateDateOrder()
         manualDateTarget = nil
+    }
+
+    /// Recomputes the cross-field validation message after either date changes.
+    ///
+    /// Uses the same wording as `MedicineValidationError.expiryNotAfterManufacturing`, so
+    /// the user sees one consistent message whether the rule fails while entering dates
+    /// or while saving. While only one date is set, there is nothing to compare yet.
+    private func revalidateDateOrder() {
+        if let manufacturingDate, let expiryDate, expiryDate <= manufacturingDate {
+            validationMessage = "Expiry date must be after the manufacturing date."
+        } else {
+            validationMessage = nil
+        }
     }
 
     /// The date currently targeted by the dropdown (manufacturing or expiry).
@@ -730,11 +734,7 @@ struct ContentView: View {
         }
 
         manufacturingDate = date
-        if let expiryDate {
-            validationMessage = date < expiryDate ? nil : "Manufacturing date must be before the expiry date."
-        } else {
-            validationMessage = nil
-        }
+        revalidateDateOrder()
     }
 
     /// Parses and applies a scanned expiry date.
@@ -745,11 +745,7 @@ struct ContentView: View {
         }
 
         expiryDate = date
-        if let manufacturingDate {
-            validationMessage = date > manufacturingDate ? nil : "Expiry date must be after the manufacturing date."
-        } else {
-            validationMessage = nil
-        }
+        revalidateDateOrder()
     }
 
 }
@@ -757,7 +753,7 @@ struct ContentView: View {
 /// Light, friendly colors used by the PillEye interface.
 ///
 /// Grouping colors here keeps styling consistent and easier to change later.
-enum PillEyePalette {
+nonisolated enum PillEyePalette {
     static let background = LinearGradient(
         colors: [
             Color(red: 0.94, green: 0.99, blue: 0.97),
