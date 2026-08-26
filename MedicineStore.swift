@@ -59,19 +59,27 @@ final class MedicineStore {
 
     /// Validates, stores, persists, and schedules a reminder for a medicine.
     ///
-    /// `async throws` means this function does asynchronous work and can fail. The caller
-    /// must use `await` and `try`, then handle any thrown validation, disk, or notification error.
+    /// Saving an exact duplicate (same name and same calendar dates) is rejected with
+    /// `MedicineValidationError.duplicateMedicine`. Returns the saved medicine so the UI
+    /// can show a confirmation with the stored (normalized) values.
+    @discardableResult
     func save(
         name: String,
         manufacturingDate: Date,
         expiryDate: Date,
         reminderLeadDays: Int = 1
-    ) async throws {
+    ) async throws -> Medicine {
         try MedicineValidator.validate(
             name: name,
             manufacturingDate: manufacturingDate,
             expiryDate: expiryDate
         )
+
+        guard !medicines.contains(where: {
+            $0.isDuplicate(ofName: name, manufacturingDate: manufacturingDate, expiryDate: expiryDate)
+        }) else {
+            throw MedicineValidationError.duplicateMedicine
+        }
 
         let medicine = Medicine(
             name: name,
@@ -83,6 +91,7 @@ final class MedicineStore {
         try await notificationScheduler.scheduleExpiryReminder(for: medicine)
         medicines.insert(medicine, at: 0)
         try persistToDisk()
+        return medicine
     }
 
     /// Applies changes to an existing medicine, saves them to disk, and refreshes its reminder.

@@ -38,6 +38,12 @@
   disabled when empty.
 - [x] T015 Auto-advance the dropdown to the other date field after each manual or scanned capture
   (`ManualDateTarget.other`).
+- [x] T016 Layout polish: Scan sits beside the Manufacturing/Expiry dropdown on one line
+  (picker `.fixedSize()` to prevent label wrapping); Set/Clear are equal-width tap targets;
+  Mfg/Exp shown as status icons + text. Verified with rendered previews.
+- [x] T017 Mfg/Exp status line is deliberately undecorated (no capsule/fill/border) so it
+  cannot be mistaken for a button; teal checkmark when filled, coral warning + red dash when
+  empty; combined accessibility element per date.
 
 ## Notes
 - Constitution compliance: SwiftUI + async/await only; design system reused; light mode + portrait;

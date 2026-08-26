@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var manualDateDraft = Date()
     @State private var notificationMedicineID: UUID?
     @State private var medicineEditDraft: MedicineEditDraft?
+    @State private var savedConfirmation: Medicine?
     @State private var showingSavedMedicines = false
     @State private var showingBackupImporter = false
     @State private var pendingImportData: Data?
@@ -133,8 +134,13 @@ struct ContentView: View {
                     Button {
                         showingSavedMedicines = true
                     } label: {
-                        Label("Saved medicines", systemImage: "list.bullet.rectangle.portrait.fill")
-                            .frame(maxWidth: .infinity)
+                        Label(
+                            store.medicines.isEmpty
+                                ? "Saved medicines"
+                                : "Saved medicines (\(store.medicines.count))",
+                            systemImage: "list.bullet.rectangle.portrait.fill"
+                        )
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal, minHeight: 46))
                     .accessibilityIdentifier("savedMedicinesButton")
@@ -150,7 +156,7 @@ struct ContentView: View {
                                 image: Image(systemName: "cross.case.fill")
                             )
                         ) {
-                            Label("Export medicines", systemImage: "square.and.arrow.up")
+                            Label("Export data", systemImage: "square.and.arrow.up")
                         }
                         .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue))
                         .accessibilityIdentifier("exportMedicinesButton")
@@ -160,7 +166,7 @@ struct ContentView: View {
                         backupMessage = nil
                         showingBackupImporter = true
                     } label: {
-                        Label("Import from backup", systemImage: "square.and.arrow.down")
+                        Label("Import data", systemImage: "square.and.arrow.down")
                     }
                     .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary))
                     .accessibilityIdentifier("importMedicinesButton")
@@ -221,6 +227,12 @@ struct ContentView: View {
                     medicineEditPopup(for: medicineEditDraft)
                 } else if let notificationMedicine {
                     medicineDetailsPopup(for: notificationMedicine)
+                }
+            }
+            .overlay {
+                if let savedConfirmation {
+                    saveConfirmationCard(for: savedConfirmation)
+                        .transition(.opacity.combined(with: .scale(scale: 0.92)))
                 }
             }
             .fileImporter(
@@ -529,6 +541,48 @@ struct ContentView: View {
         }
     }
 
+    /// Transient center card confirming a medicine was saved.
+    ///
+    /// Unlike the modal popups, there is no dimmed backdrop and touches pass straight
+    /// through, so the user can keep working while the card dissolves on its own.
+    private func saveConfirmationCard(for medicine: Medicine) -> some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 10) {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 34))
+                    .foregroundStyle(PillEyePalette.teal)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Saved!")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(PillEyePalette.deepTeal)
+                    Text(medicine.name)
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(PillEyePalette.coral)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                detailRow(title: "Manufacturing", value: medicine.manufacturingDate.formatted(date: .abbreviated, time: .omitted))
+                detailRow(title: "Expiry", value: medicine.expiryDate.formatted(date: .abbreviated, time: .omitted))
+                detailRow(title: "Reminder", value: "\(ReminderLeadOption.label(for: medicine.reminderLeadDays)) before expiry")
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: 310)
+        .background(PillEyePalette.popupBackground, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(PillEyePalette.mint, lineWidth: 2)
+        }
+        .shadow(color: PillEyePalette.deepTeal.opacity(0.22), radius: 20, x: 0, y: 10)
+        .fontDesign(.rounded)
+        .allowsHitTesting(false)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("saveConfirmationCard")
+    }
+
     /// One title/value line inside the medicine notification popup.
     private func detailRow(title: String, value: String) -> some View {
         HStack {
@@ -626,14 +680,16 @@ struct ContentView: View {
         }
     }
 
-    /// A single compact row that captures whichever date the dropdown selects.
+    /// A single compact block that captures whichever date the dropdown selects.
     ///
-    /// This replaces the previous two full-height rows to save vertical space. A menu
-    /// picker chooses the field being set, Set/Scan act on that field, and a summary line
-    /// keeps both captured dates visible at once so nothing is hidden by the collapse.
+    /// Layout, top to bottom:
+    /// 1. "Date" + the Manufacturing/Expiry dropdown with Scan aligned beside it, so
+    ///    choosing what to capture and scanning it sit on one line.
+    /// 2. Equal-width Set/Change and Clear buttons, giving two large, tidy tap targets.
+    /// 3. Mfg/Exp status chips that keep both captured dates visible at all times.
     private var dateEntryRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
                 Text("Date")
                     .fontWeight(.semibold)
                     .foregroundStyle(PillEyePalette.deepTeal)
@@ -648,23 +704,10 @@ struct ContentView: View {
                     EmptyView()
                 }
                 .pickerStyle(.menu)
+                .fixedSize()
                 .accessibilityLabel("Date to set")
                 .tint(PillEyePalette.teal)
                 .accessibilityIdentifier("dateFieldPicker")
-            }
-
-            HStack {
-                Button(activeDateValue == nil ? "Set" : "Change") {
-                    openManualDatePopup(for: activeDateField)
-                }
-                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 38))
-
-                Button("Clear") {
-                    clearDates()
-                }
-                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, prominence: .secondary, minHeight: 38))
-                .disabled(manufacturingDate == nil && expiryDate == nil)
-                .accessibilityIdentifier("clearDatesButton")
 
                 Button {
                     scannerMode = activeDateField == .manufacturing ? .manufacturingDate : .expiryDate
@@ -672,28 +715,56 @@ struct ContentView: View {
                 } label: {
                     Label("Scan", systemImage: "text.viewfinder")
                 }
-                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal, prominence: .secondary, minHeight: 38))
+                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.teal, prominence: .secondary, minHeight: 34))
             }
 
-            HStack(spacing: 14) {
+            HStack(spacing: 8) {
+                Button {
+                    openManualDatePopup(for: activeDateField)
+                } label: {
+                    Text(activeDateValue == nil ? "Set Date" : "Change")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.blue, prominence: .secondary, minHeight: 38))
+
+                Button {
+                    clearDates()
+                } label: {
+                    Text("Clear")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(DimensionalButtonStyle(fill: PillEyePalette.coral, prominence: .secondary, minHeight: 38))
+                .disabled(manufacturingDate == nil && expiryDate == nil)
+                .accessibilityIdentifier("clearDatesButton")
+            }
+
+            HStack(spacing: 10) {
                 dateSummaryChip(title: "Mfg", date: manufacturingDate)
                 dateSummaryChip(title: "Exp", date: expiryDate)
             }
         }
+        .padding(.vertical, 2)
     }
 
-    /// A compact "Mfg: … / Exp: …" chip keeping both captured dates visible.
+    /// A plain "Mfg: … / Exp: …" status line keeping both captured dates visible.
     ///
-    /// An empty date shows a red dash so a missing value stands out at a glance.
+    /// Deliberately undecorated — no capsule, fill, or border — so it reads as passive
+    /// status text rather than another tappable button. A filled date shows a teal
+    /// checkmark; an empty one shows a coral warning icon and a red dash.
     private func dateSummaryChip(title: String, date: Date?) -> some View {
         HStack(spacing: 4) {
+            Image(systemName: date == nil ? "calendar.badge.exclamationmark" : "calendar.badge.checkmark")
+                .font(.caption2)
+                .foregroundStyle(date == nil ? PillEyePalette.coral : PillEyePalette.teal)
             Text("\(title):")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(PillEyePalette.deepTeal)
+                .foregroundStyle(PillEyePalette.deepTeal.opacity(0.75))
             Text(date?.formatted(date: .abbreviated, time: .omitted) ?? "—")
-                .font(.caption.weight(date == nil ? .bold : .medium))
-                .foregroundStyle(date == nil ? PillEyePalette.coral : PillEyePalette.blue)
+                .font(.caption.weight(date == nil ? .bold : .semibold))
+                .foregroundStyle(date == nil ? PillEyePalette.coral : PillEyePalette.deepTeal)
         }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 
     /// Clears both captured dates so the user can start the date entry over.
@@ -721,15 +792,35 @@ struct ContentView: View {
         }
 
         do {
-            try await store.save(
+            let medicine = try await store.save(
                 name: medicineName,
                 manufacturingDate: manufacturingDate,
                 expiryDate: expiryDate,
                 reminderLeadDays: reminderLeadDays
             )
             resetForm()
+            showSaveConfirmation(for: medicine)
         } catch {
             validationMessage = error.localizedDescription
+        }
+    }
+
+    /// Shows the transient saved-medicine confirmation, then dissolves it away.
+    ///
+    /// The card fades in with a small spring, stays up long enough to read, and fades
+    /// out on its own. If another save happens meanwhile, the newer confirmation wins
+    /// and this one skips its dismissal.
+    private func showSaveConfirmation(for medicine: Medicine) {
+        withAnimation(.spring(duration: 0.35)) {
+            savedConfirmation = medicine
+        }
+
+        Task {
+            try? await Task.sleep(for: .seconds(2.4))
+            guard savedConfirmation?.id == medicine.id else { return }
+            withAnimation(.easeOut(duration: 0.8)) {
+                savedConfirmation = nil
+            }
         }
     }
 

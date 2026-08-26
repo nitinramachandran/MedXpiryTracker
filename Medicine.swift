@@ -77,6 +77,23 @@ nonisolated struct Medicine: Identifiable, Codable, Hashable {
         }
         return expiryDate <= threshold
     }
+
+    /// Returns `true` when this record describes the same medicine as the given form values.
+    ///
+    /// Two records count as the same medicine when the names match (ignoring case and
+    /// surrounding whitespace) and both dates fall on the same calendar days. The same
+    /// name with a different expiry date is a separate box and is not a duplicate.
+    func isDuplicate(
+        ofName name: String,
+        manufacturingDate: Date,
+        expiryDate: Date,
+        calendar: Calendar = .current
+    ) -> Bool {
+        let candidateName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return self.name.caseInsensitiveCompare(candidateName) == .orderedSame
+            && calendar.isDate(self.manufacturingDate, inSameDayAs: manufacturingDate)
+            && calendar.isDate(self.expiryDate, inSameDayAs: expiryDate)
+    }
 }
 
 /// Describes editable changes to an existing medicine.
@@ -97,6 +114,7 @@ nonisolated struct MedicineUpdate {
 nonisolated enum MedicineValidationError: Error, Equatable, LocalizedError {
     case missingName
     case expiryNotAfterManufacturing
+    case duplicateMedicine
 
     /// Converts each validation case into text that can be shown in the UI.
     var errorDescription: String? {
@@ -105,6 +123,8 @@ nonisolated enum MedicineValidationError: Error, Equatable, LocalizedError {
             return "Enter a medicine name."
         case .expiryNotAfterManufacturing:
             return "Expiry date must be after the manufacturing date."
+        case .duplicateMedicine:
+            return "This medicine is already saved with the same dates."
         }
     }
 }

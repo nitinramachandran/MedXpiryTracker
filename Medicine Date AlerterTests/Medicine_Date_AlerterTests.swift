@@ -247,6 +247,25 @@ struct Medicine_Date_AlerterTests {
         #expect(medicine.reminderDate == Calendar.current.date(byAdding: .day, value: -30, to: expiry))
     }
 
+    /// Verifies a duplicate medicine (same name and same dates) is rejected, while the
+    /// same name with a different expiry date remains a legitimate separate record.
+    @Test @MainActor func storeRejectsDuplicateMedicineButAllowsDifferentDates() async throws {
+        let store = MedicineStore(notificationScheduler: SpyNotificationScheduler())
+        let manufacturing = try #require(makeDate(year: 2026, month: 5, day: 1))
+        let expiry = try #require(makeDate(year: 2027, month: 5, day: 1))
+        let laterExpiry = try #require(makeDate(year: 2027, month: 11, day: 1))
+
+        try await store.save(name: "Dolo 650", manufacturingDate: manufacturing, expiryDate: expiry)
+
+        await #expect(throws: MedicineValidationError.duplicateMedicine) {
+            try await store.save(name: "  dolo 650 ", manufacturingDate: manufacturing, expiryDate: expiry)
+        }
+        #expect(store.medicines.count == 1)
+
+        try await store.save(name: "Dolo 650", manufacturingDate: manufacturing, expiryDate: laterExpiry)
+        #expect(store.medicines.count == 2)
+    }
+
     /// Verifies the expiring-soon window: not expired yet AND within 60 days of expiry.
     ///
     /// Boundaries matter here: a medicine expiring exactly 60 days from `now` still counts,
